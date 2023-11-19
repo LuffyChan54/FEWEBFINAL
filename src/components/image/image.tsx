@@ -6,7 +6,7 @@ import { getBase64 } from "utils/image";
 import { storage } from "lib/firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-export default function UploadImage({ url, setUrl }: { url: string, setUrl: (url: string) => void }) {
+export default function UploadImage({ setUrl }: { url: string, setUrl: (url: string) => void }) {
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
     const [previewTitle, setPreviewTitle] = useState('');
