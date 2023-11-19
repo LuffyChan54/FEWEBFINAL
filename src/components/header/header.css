@@ -1,0 +1,45 @@
+.header {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    height: 60px;
+}
+
+.nav {
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    gap: 3rem;
+}
+
+.nav.nav-pages {
+    margin-left: auto;
+    flex-shrink: unset;
+    flex-grow: unset;
+    align-items: center;
+}
+
+.nav a.active {
+    display: block;
+    position: relative;
+}
+
+.nav a.active::after {
+    content: "";
+    width: 70%;
+    margin: 0.25rem auto 0;
+    border: 2px solid #4461F2;
+    border-radius: 10px;
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+}
+
+.nav.nav-pages .register {
+    background-color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 1px 3px;
+}

@@ -1,0 +1,123 @@
+#signin {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 80vh;
+    width: 100%;
+}
+
+#signin .side {
+    width: 60%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.side .side-description {
+    min-width: 250px;
+}
+
+.side .side-image {
+    min-width: 100px;
+    display: flex;
+    justify-content: center;
+    min-width: 200px;
+}
+
+.side .side-description .side-description__header {
+    font-size: 3rem;
+    font-weight: 600;
+}
+
+.side .side-description .side-description__description {
+    font-size: 1rem;
+    margin-top: 3rem;
+}
+
+.form-note {
+    margin-top: 1rem;
+    color: #777;
+}
+
+#signin .form {
+    margin-left: auto;
+}
+
+.form .form-recover-password {
+    margin-top: 0.75rem;
+}
+
+.form .form-recover-password a {
+    color: #777;
+    font-size: 0.75rem;
+    float: right;
+}
+
+.form .form-button {
+    margin-top: 3rem;
+    background-color: rgba(69, 98, 242, 0.8);
+    width: 100%;
+}
+
+.form .form-button:hover {
+    background-color: rgb(69, 98, 242);
+}
+
+.form .form-footer {
+    margin-top: 4rem;
+}
+
+.form-footer .line {
+    border-top: 1px solid #777;
+    width: 100%;
+    position: relative;
+}
+
+.form-footer .line::after {
+    content: "Or continue with";
+    background-color: white;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    color: #777;
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-footer .btn-group {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.btn-group .btn-group__social {
+    font-size: 1.2rem;
+    outline: 0;
+    border: 1px solid #777;
+    background-color: white;
+    padding: 0.75rem 2rem;
+    cursor: pointer;
+}
+
+.github {
+    color: #B717EC;
+}
+
+.facebook {
+    color: #1789EC;
+}
+
+.google {
+    color: black;
+}
+
+@media only screen and (max-width: 1100px) {
+    #signin .side {
+        justify-content: center;
+        align-items: center;
+    }
+}

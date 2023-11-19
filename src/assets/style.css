@@ -1,0 +1,31 @@
+*,
+:root {
+    margin: 0;
+    border: 0;
+    box-sizing: border-box;
+    font-family: 'Quicksand', sans-serif;
+}
+
+html {
+    font-size: 15px;
+}
+
+
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+ul {
+    list-style-type: none;
+}
+
+input {
+    outline: none;
+    border: none;
+}
+
+.primary {
+    color: #4461F2;
+}

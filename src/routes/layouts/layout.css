@@ -1,0 +1,26 @@
+.user-layout,
+.anonymous-layout {
+    margin: 0 auto;
+}
+
+.user-layout {
+    display: flex;
+    margin-top: 1rem;
+}
+
+.user-layout__content {
+    margin: 1rem 3rem 0;
+    width: 100%;
+}
+
+.anonymous-layout {
+    max-width: 1240px;
+    width: 80%;
+}
+
+@media only screen and (max-width: 1100px) {
+    .anonymous-layout {
+        max-width: 900px;
+        width: 80%;
+    }
+}
