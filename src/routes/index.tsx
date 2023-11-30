@@ -1,15 +1,11 @@
-import {
-  Route,
-  createBrowserRouter,
-  createRoutesFromElements,
-} from "react-router-dom";
-import { AnonymousLayout, UserLayout } from "./layouts";
-import { Signin, Signup } from "pages/landingPage";
-import { ProtectRouter } from "components/auth";
-import Home from "pages/home/home";
-import { NavigateFromProtectToUnProtectRoute } from "components/auth";
-import { Profile } from "pages/profile";
+import { createBrowserRouter } from "react-router-dom";
 import LandingPage from "pages/landingPage/LandingPage";
+import HomePage from "pages/homePage/HomePage";
+import AuthPage from "pages/authPage/AuthPage";
+import {
+  NavigateFromProtectToUnProtectRoute,
+  ProtectRouter,
+} from "components/auth";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -32,7 +28,25 @@ import LandingPage from "pages/landingPage/LandingPage";
 
 export const routes = createBrowserRouter([
   {
-    path: "/",
-    element: <LandingPage />,
+    element: <NavigateFromProtectToUnProtectRoute />,
+    children: [
+      {
+        path: "/",
+        element: <LandingPage />,
+      },
+      {
+        path: "/auth",
+        element: <AuthPage />,
+      },
+    ],
+  },
+  {
+    element: <ProtectRouter />,
+    children: [
+      {
+        path: "/home",
+        element: <HomePage />,
+      },
+    ],
   },
 ]);

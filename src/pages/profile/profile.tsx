@@ -152,7 +152,7 @@ export default function Profile() {
           </div>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer pauseOnHover />
     </div>
   );
 }

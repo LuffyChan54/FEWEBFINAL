@@ -33,14 +33,80 @@
   margin: 0 auto;
   max-width: 1800px;
   width: 100%;
-  display: flex;
+  /* display: flex; */
   justify-content: space-between;
   align-items: center;
   padding: 20px;
 }
 
-.LP_Hero_Nav .Nav_Mobile {
+.LP_Hero_Nav.Nav_Mobile {
   display: none;
+}
+
+.LP_MobileNav_Close,
+.LP_MobileNav_Open {
+  width: 40px;
+  overflow: hidden;
+}
+.LP_MobileNav_Close img,
+.LP_MobileNav_Open img {
+  width: 100%;
+  cursor: pointer;
+}
+
+.LP_MobileNav_Close {
+  display: none;
+}
+
+.LP_MobileNav {
+  display: none;
+  transform: translateX(200%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #fbffff;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+.LP_MobileNav.active {
+  display: block;
+  transition: all 0.2s ease;
+  transform: translateX(0%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+}
+
+.LP_MobileNav.active .Login {
+  color: #d6a518;
+}
+
+.LP_MobileNav.active .Get_Started {
+  color: #fbffff;
+  background-color: #23b574;
+
+  padding: 15px 30px;
+}
+
+.MobileNav_Empty_Div {
+  width: 100%;
+  height: 100px;
+  background: transparent;
+}
+
+.LP_MobileNav.active .LP_MobileNav_Close {
+  display: block;
+  position: absolute;
+  top: 45px;
+  right: 25px;
+}
+
+.LP_Hero_Nav.Nav_Desktop {
+  display: flex;
 }
 
 .LP_Nav_Logo {
@@ -70,6 +136,8 @@
 }
 
 .LP_Nav_BTNS_Login .Login {
+  cursor: pointer;
+  display: inline-block;
   text-decoration: none;
   color: #fbffff;
   font-weight: 500;
@@ -85,6 +153,7 @@
 }
 
 .LP_Nav_BTNS_Login .Get_Started {
+  display: block;
   text-decoration: none;
   background-color: #fbffff;
   color: #146842;
@@ -94,11 +163,12 @@
   padding: 10px 25px;
   border-radius: 4px;
   transition: all 0.2s ease;
-
+  cursor: pointer;
   border: 4px solid #fbffff;
 }
 
 .LP_Nav_BTNS_Login .Get_Started:hover {
+  display: block;
   border: 4px solid #23b574;
   background-color: transparent;
   color: #fbffff;
@@ -141,6 +211,7 @@
 }
 
 .LeftCTN_WrapBTN .Get_Started {
+  display: block;
   margin-top: 40px;
   text-decoration: none;
   background-color: #23b574;
@@ -158,5 +229,38 @@
 }
 
 .LeftCTN_WrapBTN .Get_Started:hover {
+  display: block;
   background-color: #146842;
+}
+
+@media screen and (max-width: 750px) {
+  .LP_Hero_Nav.Nav_Desktop {
+    display: none;
+  }
+
+  .LP_Hero_Nav.Nav_Mobile {
+    display: flex;
+  }
+
+  .Content_LeftCTN {
+    text-align: center;
+  }
+
+  .LP_Hero_Content {
+    padding: 80px 10px;
+  }
+
+  .LeftCTN_Title {
+    font-size: 40px;
+  }
+
+  .LeftCTN_SubTitle {
+    padding: 0 20px;
+    font-size: 16px;
+  }
+
+  .Get_Started {
+    display: block;
+    margin: 40px auto;
+  }
 }
