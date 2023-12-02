@@ -1,5 +1,7 @@
+import GlobalLayout from "layouts/globalLayout/GlobalLayout";
+
 const HomePage = () => {
-  return <div>HomePage </div>;
+  return <GlobalLayout />;
 };
 
 export default HomePage;

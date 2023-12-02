@@ -1,5 +1,6 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 import { getNextExpiresTime, isTokenStillValid } from "utils/expiresTime";
 
 export const authClient = axios.create({
@@ -33,6 +34,11 @@ userClient.interceptors.request.use(
     let { accessToken, refreshToken, expiresTime } = JSON.parse(token);
 
     if (!isTokenStillValid(expiresTime)) {
+      if (refreshToken.trim() == "") {
+        //Sign in with gooogle doesn't have refresh token
+        const navigate = useNavigate();
+        navigate("/auth");
+      }
       const newToken = await getRefreshToken(refreshToken);
       accessToken = newToken.accessToken;
 

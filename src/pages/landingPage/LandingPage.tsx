@@ -1,9 +1,67 @@
 import "./LandingPage.css";
-import { useRef } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
-import { Link } from "react-router-dom";
+import { Suspense, useEffect, useRef, useState } from "react";
+import {
+  Await,
+  Link,
+  defer,
+  useLoaderData,
+  useLocation,
+  useNavigation,
+} from "react-router-dom";
+import { Spin } from "antd";
+import { userClient } from "lib/axios";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import * as AuthService from "services/authService";
+import { useDispatch } from "react-redux";
+import { signin } from "@redux/reducer";
+
+type ParamsObject = {
+  [key: string]: string;
+};
+
 const LandingPage = () => {
-  const { loginWithRedirect } = useAuth0();
+  const spinRef = useRef(null);
+  const isSocialLogin = useRef(false);
+  const location = useLocation();
+  const dispatch = useDispatch();
+  // check if from social login redirect:
+  const url = window.location.href;
+  if (url.includes("code")) {
+    isSocialLogin.current = true;
+  }
+
+  useEffect(() => {
+    if (isSocialLogin.current) {
+      // Extract the value of the 'code' query parameter from the URL
+      const queryParams = new URLSearchParams(location.search);
+      const code = queryParams.get("code") || "";
+
+      AuthService.getTokenSocialLogin(code)
+        .then(({ userInfo, token }) => {
+          dispatch(
+            signin({
+              user: userInfo,
+              token,
+            })
+          );
+          toast.success("Log In Successfully", { theme: "colored" });
+        })
+        .catch((err) => {
+          console.log(err);
+          toast.warning(err?.response?.data.message[0], {
+            theme: "colored",
+          });
+        })
+        .finally(() => {
+          const spinElement = spinRef.current as unknown as HTMLDivElement;
+          if (spinElement?.style) {
+            spinElement.style.display = "none";
+          }
+        });
+    }
+    return;
+  }, []);
 
   const mobileNavRef = useRef(null);
 
@@ -17,6 +75,12 @@ const LandingPage = () => {
 
   return (
     <div className="LP_WrapCTN">
+      {isSocialLogin.current && (
+        <div ref={spinRef}>
+          <Spin fullscreen={true} />
+        </div>
+      )}
+
       <div className="LP_HeroCTN">
         <div className="LP_Hero_Nav Nav_Desktop ">
           <div className="LP_Nav_Logo">
@@ -93,6 +157,8 @@ const LandingPage = () => {
           <img src="/imgs/wavetop.svg" />
         </div>
       </div>
+
+      <ToastContainer />
     </div>
   );
 };

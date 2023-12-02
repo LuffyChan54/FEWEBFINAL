@@ -38,23 +38,23 @@ const authItems: TabsProps["items"] = [
   },
 ];
 
+const iconStyles: CSSProperties = {
+  marginInlineStart: "16px",
+  // color: setAlpha(token.colorTextBase, 0.2),
+  fontSize: "34px",
+  verticalAlign: "middle",
+  cursor: "pointer",
+  color: "#fff",
+  padding: "4px",
+  borderRadius: "4px",
+  background: "#4267b2",
+};
+
 const AuthPage = () => {
   const [isSendingRequest, setIsSendingRequest] = useState(false);
   const { token } = theme.useToken();
   const [loginType, setLoginType] = useState<LoginType>("login");
   const dispatch = useDispatch();
-
-  const iconStyles: CSSProperties = {
-    marginInlineStart: "16px",
-    // color: setAlpha(token.colorTextBase, 0.2),
-    fontSize: "34px",
-    verticalAlign: "middle",
-    cursor: "pointer",
-    color: "#fff",
-    padding: "4px",
-    borderRadius: "4px",
-    background: "#4267b2",
-  };
 
   //Handle submit function:
   const handleSubmit = async (value: any): Promise<boolean> => {
@@ -125,6 +125,18 @@ const AuthPage = () => {
     return true;
   };
 
+  //Hanle google click:
+  const handleGoogleClick = async () => {
+    setIsSendingRequest(true);
+    await authService.signinGG();
+    setIsSendingRequest(false);
+  };
+
+  const handleFBClick = async () => {
+    setIsSendingRequest(true);
+    await authService.signinFB();
+    setIsSendingRequest(false);
+  };
   return (
     // ProConfigProvider
     <>
@@ -196,8 +208,12 @@ const AuthPage = () => {
                 actions={
                   <Space>
                     OR
-                    <FacebookOutlined style={iconStyles} />
+                    <FacebookOutlined
+                      onClick={() => handleFBClick()}
+                      style={iconStyles}
+                    />
                     <GoogleOutlined
+                      onClick={() => handleGoogleClick()}
                       style={{
                         ...iconStyles,
                         color: "#23ae5f",
