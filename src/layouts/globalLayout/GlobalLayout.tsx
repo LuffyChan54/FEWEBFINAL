@@ -1,14 +1,29 @@
 import React, { useState } from "react";
 import {
+  BellOutlined,
   DesktopOutlined,
+  DownOutlined,
   FileOutlined,
   PieChartOutlined,
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
-
+import {
+  Badge,
+  Breadcrumb,
+  Dropdown,
+  message,
+  Button,
+  Flex,
+  Layout,
+  Menu,
+  Space,
+  theme,
+  Avatar,
+} from "antd";
+import MyAlert from "components/myAlert/MyAlert";
+// import "assets/customTheme/color/colors.js";
 const { Header, Content, Footer, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -42,10 +57,46 @@ const items: MenuItem[] = [
   getItem("Files", "9", <FileOutlined />),
 ];
 
-// const breakcrumbItems = [
-//   { label: "User", key: "User" }, // remember to pass the key prop
-//   { label: "Bill", key: "Bill" },
-// ];
+const breakcrumbItems = [
+  { label: "User", key: "User" }, // remember to pass the key prop
+  { label: "Bill", key: "Bill" },
+];
+
+const handleMenuClick: MenuProps["onClick"] = (e) => {
+  message.info("Click on menu item.");
+  console.log("click", e);
+};
+
+const userDropdownItems: MenuProps["items"] = [
+  {
+    label: "1st menu item",
+    key: "1",
+    icon: <UserOutlined />,
+  },
+  {
+    label: "2nd menu item",
+    key: "2",
+    icon: <UserOutlined />,
+  },
+  {
+    label: "3rd menu item",
+    key: "3",
+    icon: <UserOutlined />,
+    danger: true,
+  },
+  {
+    label: "4rd menu item",
+    key: "4",
+    icon: <UserOutlined />,
+    danger: true,
+    disabled: true,
+  },
+];
+
+const menuProps = {
+  userDropdownItems,
+  onClick: handleMenuClick,
+};
 
 const GlobalLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -70,13 +121,27 @@ const GlobalLayout: React.FC = () => {
       </Sider>
       <Layout>
         <Header style={{ padding: "0 16px", background: colorBgContainer }}>
-          HEADER
+          <Flex gap="large" justify="flex-end" align="center">
+            <MyAlert />
+            <Dropdown menu={{ items }}>
+              <Space size={24}>
+                <Badge count={1}>
+                  <Avatar
+                    src=""
+                    shape="square"
+                    icon={<UserOutlined />}
+                    style={{ cursor: "pointer" }}
+                  />
+                </Badge>
+              </Space>
+            </Dropdown>
+          </Flex>
         </Header>
         <Content style={{ margin: "0 16px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }}>
-            <Breadcrumb.Item>User</Breadcrumb.Item>
-            <Breadcrumb.Item>Bill</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={breakcrumbItems}
+            style={{ margin: "16px 0" }}
+          ></Breadcrumb>
           <div
             style={{
               padding: 24,

@@ -1,0 +1,543 @@
+/*
+  Ant Design 3.0 Themes
+*/
+
+/* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */
+// @import "./color/colors.js";
+
+//huy
+
+@blue-1: "#e6f7ff";
+@blue-2: "#bae7ff";
+@blue-3: "#91d5ff";
+@blue-4: "#69c0ff";
+@blue-5: "#40a9ff";
+@blue-6: "#1890ff";
+@blue-7: "#096dd9";
+@blue-8: "#0050b3";
+@blue-9: "#003a8c";
+@blue-10: "#002766";
+@cyan-1: "#e6fffb";
+@cyan-2: "#b5f5ec";
+@cyan-3: "#87e8de";
+@cyan-4: "#5cdbd3";
+@cyan-5: "#36cfc9";
+@cyan-6: "#13c2c2";
+@cyan-7: "#08979c";
+@cyan-8: "#006d75";
+@cyan-9: "#00474f";
+@cyan-10: "#002329";
+@geekblue-1: "#f0f5ff";
+@geekblue-2: "#d6e4ff";
+@geekblue-3: "#adc6ff";
+@geekblue-4: "#85a5ff";
+@geekblue-5: "#597ef7";
+@geekblue-6: "#2f54eb";
+@geekblue-7: "#1d39c4";
+@geekblue-8: "#10239e";
+@geekblue-9: "#061178";
+@geekblue-10: "#030852";
+@gold-1: "#fffbe6";
+@gold-2: "#fff1b8";
+@gold-3: "#ffe58f";
+@gold-4: "#ffd666";
+@gold-5: "#ffc53d";
+@gold-6: "#faad14";
+@gold-7: "#d48806";
+@gold-8: "#ad6800";
+@gold-9: "#874d00";
+@gold-10: "#613400";
+@green-1: "#f6ffed";
+@green-2: "#d9f7be";
+@green-3: "#b7eb8f";
+@green-4: "#95de64";
+@green-5: "#73d13d";
+@green-6: "#52c41a";
+@green-7: "#389e0d";
+@green-8: "#237804";
+@green-9: "#135200";
+@green-10: "#092b00";
+@lime-1: "#fcffe6";
+@lime-2: "#f4ffb8";
+@lime-3: "#eaff8f";
+@lime-4: "#d3f261";
+@lime-5: "#bae637";
+@lime-6: "#a0d911";
+@lime-7: "#7cb305";
+@lime-8: "#5b8c00";
+@lime-9: "#3f6600";
+@lime-10: "#254000";
+@magenta-1: "#fff0f6";
+@magenta-2: "#ffd6e7";
+@magenta-3: "#ffadd2";
+@magenta-4: "#ff85c0";
+@magenta-5: "#f759ab";
+@magenta-6: "#eb2f96";
+@magenta-7: "#c41d7f";
+@magenta-8: "#9e1068";
+@magenta-9: "#780650";
+@magenta-10: "#520339";
+@orange-1: "#fff7e6";
+@orange-2: "#ffe7ba";
+@orange-3: "#ffd591";
+@orange-4: "#ffc069";
+@orange-5: "#ffa940";
+@orange-6: "#fa8c16";
+@orange-7: "#d46b08";
+@orange-8: "#ad4e00";
+@orange-9: "#873800";
+@orange-10: "#612500";
+@pink-1: "#fff0f6";
+@pink-2: "#ffd6e7";
+@pink-3: "#ffadd2";
+@pink-4: "#ff85c0";
+@pink-5: "#f759ab";
+@pink-6: "#eb2f96";
+@pink-7: "#c41d7f";
+@pink-8: "#9e1068";
+@pink-9: "#780650";
+@pink-10: "#520339";
+@purple-1: "#f9f0ff";
+@purple-2: "#efdbff";
+@purple-3: "#d3adf7";
+@purple-4: "#b37feb";
+@purple-5: "#9254de";
+@purple-6: "#722ed1";
+@purple-7: "#531dab";
+@purple-8: "#391085";
+@purple-9: "#22075e";
+@purple-10: "#120338";
+@red-1: "#fff1f0";
+@red-2: "#ffccc7";
+@red-3: "#ffa39e";
+@red-4: "#ff7875";
+@red-5: "#ff4d4f";
+@red-6: "#f5222d";
+@red-7: "#cf1322";
+@red-8: "#a8071a";
+@red-9: "#820014";
+@red-10: "#5c0011";
+@volcano-1: "#fff2e8";
+@volcano-2: "#ffd8bf";
+@volcano-3: "#ffbb96";
+@volcano-4: "#ff9c6e";
+@volcano-5: "#ff7a45";
+@volcano-6: "#fa541c";
+@volcano-7: "#d4380d";
+@volcano-8: "#ad2102";
+@volcano-9: "#871400";
+@volcano-10: "#610b00";
+@yellow-1: "#feffe6";
+@yellow-2: "#ffffb8";
+@yellow-3: "#fffb8f";
+@yellow-4: "#fff566";
+@yellow-5: "#ffec3d";
+@yellow-6: "#fadb14";
+@yellow-7: "#d4b106";
+@yellow-8: "#ad8b00";
+@yellow-9: "#876800";
+@yellow-10: "#614700";
+
+// The prefix to use on all css classes from ant.
+@ant-prefix: ant;
+
+// -------- Colors -----------
+@primary-color: @blue-6;
+@info-color: @blue-6;
+@success-color: @green-6;
+@processing-color: @primary-color;
+@error-color: @red-6;
+@highlight-color: @red-6;
+@warning-color: @gold-6;
+@normal-color: #d9d9d9;
+
+// Color used by default to control hover and active backgrounds and for
+// alert info backgrounds.
+@primary-1: @blue-1; // replace tint(@primary-color, 90%)
+@primary-2: @blue-2; // replace tint(@primary-color, 80%)
+@primary-3: @blue-3; // unused
+@primary-4: @blue-4; // unused
+@primary-5: @blue-5; // color used to control the text color in many active and hover states, replace tint(@primary-color, 20%)
+@primary-6: @primary-color; // color used to control the text color of active buttons, don't use, use @primary-color
+@primary-7: @blue-7; // replace shade(@primary-color, 5%)
+@primary-8: @blue-8; // unused
+@primary-9: @blue-9; // unused
+@primary-10: @blue-10; // unused
+
+// Base Scaffolding Variables
+// ---
+
+// Background color for `<body>`
+@body-background: #fff;
+// Base background color for most components
+@component-background: #fff;
+@font-family-no-number: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
+  Helvetica, Arial, sans-serif;
+@font-family: "Helvetica Neue For Number", @font-family-no-number;
+@code-family: Consolas, Menlo, Courier, monospace;
+@heading-color: fade(#000, 85%);
+@text-color: fade(#000, 65%);
+@text-color-secondary: fade(#000, 45%);
+@heading-color-dark: fade(#fff, 100%);
+@text-color-dark: fade(#fff, 85%);
+@text-color-secondary-dark: fade(#fff, 65%);
+@font-size-base: 14px;
+@font-size-lg: @font-size-base + 2px;
+@font-size-sm: 12px;
+@line-height-base: 1.5;
+@border-radius-base: 4px;
+@border-radius-sm: 2px;
+
+// vertical paddings
+@padding-lg: 24px; // containers
+@padding-md: 16px; // small containers and buttons
+@padding-sm: 12px; // Form controls and items
+@padding-xs: 8px; // small items
+
+// vertical padding for all form controls
+@control-padding-horizontal: @padding-sm;
+@control-padding-horizontal-sm: @padding-xs;
+
+// The background colors for active and hover states for things like
+// list items or table cells.
+@item-active-bg: @primary-1;
+@item-hover-bg: @primary-1;
+
+// ICONFONT
+@iconfont-css-prefix: anticon;
+@icon-url: "https://at.alicdn.com/t/font_148784_r2qo40wrmaolayvi";
+
+// LINK
+@link-color: @primary-color;
+@link-hover-color: @primary-5;
+@link-active-color: @primary-7;
+@link-decoration: none;
+@link-hover-decoration: none;
+
+// Animation
+@ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+@ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+@ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+@ease-out-back: cubic-bezier(0.12, 0.4, 0.29, 1.46);
+@ease-in-back: cubic-bezier(0.71, -0.46, 0.88, 0.6);
+@ease-in-out-back: cubic-bezier(0.71, -0.46, 0.29, 1.46);
+@ease-out-circ: cubic-bezier(0.08, 0.82, 0.17, 1);
+@ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.34);
+@ease-in-out-circ: cubic-bezier(0.78, 0.14, 0.15, 0.86);
+@ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+@ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+@ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
+
+// Border color
+@border-color-base: hsv(0, 0, 85%); // base border outline a component
+@border-color-split: hsv(0, 0, 91%); // split border inside a component
+@border-width-base: 1px; // width of the border for a component
+@border-style-base: solid; // style of a components border
+
+// Outline
+@outline-blur-size: 0;
+@outline-width: 2px;
+@outline-color: @primary-color;
+
+@background-color-light: hsv(
+  0,
+  0,
+  98%
+); // background of header and selected item
+@background-color-base: hsv(0, 0, 96%); // Default grey background color
+
+// Disabled states
+@disabled-color: fade(#000, 25%);
+@disabled-bg: @background-color-base;
+@disabled-color-dark: fade(#fff, 35%);
+
+// Shadow
+@shadow-color: rgba(0, 0, 0, 0.15);
+@box-shadow-base: @shadow-1-down;
+@shadow-1-up: 0 2px 8px @shadow-color;
+@shadow-1-down: 0 2px 8px @shadow-color;
+@shadow-1-left: -2px 0 8px @shadow-color;
+@shadow-1-right: 2px 0 8px @shadow-color;
+@shadow-2: 0 4px 12px @shadow-color;
+
+// Buttons
+@btn-font-weight: 400;
+@btn-border-radius-base: @border-radius-base;
+@btn-border-radius-sm: @border-radius-base;
+
+@btn-primary-color: #fff;
+@btn-primary-bg: @primary-color;
+
+@btn-default-color: @text-color;
+@btn-default-bg: #fff;
+@btn-default-border: @border-color-base;
+
+@btn-danger-color: @error-color;
+@btn-danger-bg: @background-color-base;
+@btn-danger-border: @border-color-base;
+
+@btn-disable-color: @disabled-color;
+@btn-disable-bg: @disabled-bg;
+@btn-disable-border: @border-color-base;
+
+@btn-padding-base: 0 @padding-md - 1px;
+@btn-font-size-lg: @font-size-lg;
+@btn-font-size-sm: @font-size-base;
+@btn-padding-lg: @btn-padding-base;
+@btn-padding-sm: 0 @padding-xs - 1px;
+
+@btn-height-base: 32px;
+@btn-height-lg: 40px;
+@btn-height-sm: 24px;
+
+@btn-circle-size: @btn-height-base;
+@btn-circle-size-lg: @btn-height-lg;
+@btn-circle-size-sm: @btn-height-sm;
+
+@btn-group-border: @primary-5;
+
+// Checkbox
+@checkbox-size: 16px;
+
+// Radio
+@radio-size: 16px;
+
+// Radio buttons
+@radio-button-bg: @btn-default-bg;
+@radio-button-color: @btn-default-color;
+
+// Media queries breakpoints
+// Extra small screen / phone
+@screen-xs: 480px;
+@screen-xs-min: @screen-xs;
+
+// Small screen / tablet
+@screen-sm: 576px;
+@screen-sm-min: @screen-sm;
+
+// Medium screen / desktop
+@screen-md: 768px;
+@screen-md-min: @screen-md;
+
+// Large screen / wide desktop
+@screen-lg: 992px;
+@screen-lg-min: @screen-lg;
+
+// Extra large screen / full hd
+@screen-xl: 1200px;
+@screen-xl-min: @screen-xl;
+
+// Extra extra large screen / large descktop
+@screen-xxl: 1600px;
+@screen-xxl-min: @screen-xxl;
+
+// provide a maximum
+@screen-xs-max: (@screen-sm-min - 1px);
+@screen-sm-max: (@screen-md-min - 1px);
+@screen-md-max: (@screen-lg-min - 1px);
+@screen-lg-max: (@screen-xl-min - 1px);
+@screen-xl-max: (@screen-xxl-min - 1px);
+
+// Grid system
+@grid-columns: 24;
+@grid-gutter-width: 0;
+
+// Layout
+@layout-body-background: #f0f2f5;
+@layout-header-background: #001529;
+@layout-footer-background: @layout-body-background;
+@layout-header-height: 64px;
+@layout-header-padding: 0 50px;
+@layout-footer-padding: 24px 50px;
+@layout-sider-background: @layout-header-background;
+@layout-trigger-height: 48px;
+@layout-trigger-background: #002140;
+@layout-trigger-color: #fff;
+@layout-zero-trigger-width: 36px;
+@layout-zero-trigger-height: 42px;
+
+// z-index list
+@zindex-affix: 10;
+@zindex-back-top: 10;
+@zindex-modal-mask: 1000;
+@zindex-modal: 1000;
+@zindex-notification: 1010;
+@zindex-message: 1010;
+@zindex-popover: 1030;
+@zindex-picker: 1050;
+@zindex-dropdown: 1050;
+@zindex-tooltip: 1060;
+
+// Animation
+@animation-duration-slow: 0.3s; // Modal
+@animation-duration-base: 0.2s;
+@animation-duration-fast: 0.1s; // Tooltip
+
+// Form
+// ---
+@label-required-color: @highlight-color;
+@label-color: @heading-color;
+@form-item-margin-bottom: 24px;
+@form-item-trailing-colon: true;
+@form-vertical-label-padding: 0 0 8px;
+@form-vertical-label-margin: 0;
+
+// Input
+// ---
+@input-height-base: 32px;
+@input-height-lg: 40px;
+@input-height-sm: 24px;
+@input-padding-horizontal: @control-padding-horizontal - 1px;
+@input-padding-horizontal-base: @input-padding-horizontal;
+@input-padding-horizontal-sm: @control-padding-horizontal-sm - 1px;
+@input-padding-horizontal-lg: @input-padding-horizontal;
+@input-padding-vertical-base: 4px;
+@input-padding-vertical-sm: 1px;
+@input-padding-vertical-lg: 6px;
+@input-placeholder-color: hsv(0, 0, 75%);
+@input-color: @text-color;
+@input-border-color: @border-color-base;
+@input-bg: #fff;
+@input-addon-bg: @background-color-light;
+@input-hover-border-color: @primary-color;
+@input-disabled-bg: @disabled-bg;
+
+// Tooltip
+// ---
+//* Tooltip max width
+@tooltip-max-width: 250px;
+//** Tooltip text color
+@tooltip-color: #fff;
+//** Tooltip background color
+@tooltip-bg: rgba(0, 0, 0, 0.75);
+//** Tooltip arrow width
+@tooltip-arrow-width: 5px;
+//** Tooltip distance with trigger
+@tooltip-distance: @tooltip-arrow-width - 1px + 4px;
+//** Tooltip arrow color
+@tooltip-arrow-color: @tooltip-bg;
+
+// Popover
+// ---
+//** Popover body background color
+@popover-bg: #fff;
+//** Popover text color
+@popover-color: @text-color;
+//** Popover maximum width
+@popover-min-width: 177px;
+//** Popover arrow width
+@popover-arrow-width: 5px;
+//** Popover arrow color
+@popover-arrow-color: @popover-bg;
+//** Popover outer arrow width
+//** Popover outer arrow color
+@popover-arrow-outer-color: @popover-bg;
+//** Popover distance with trigger
+@popover-distance: @popover-arrow-width + 4px;
+
+// Modal
+// --
+@modal-mask-bg: rgba(0, 0, 0, 0.65);
+
+// Progress
+// --
+@progress-default-color: @processing-color;
+@progress-remaining-color: @background-color-base;
+
+// Menu
+// ---
+@menu-dark-bg: @layout-header-background;
+@menu-dark-submenu-bg: #000c17;
+@menu-collapsed-width: 80px;
+
+// Spin
+// ---
+@spin-dot-size-sm: 14px;
+@spin-dot-size: 20px;
+@spin-dot-size-lg: 32px;
+
+// Table
+// --
+@table-header-bg: @background-color-light;
+@table-header-sort-bg: @background-color-base;
+@table-row-hover-bg: @primary-1;
+@table-selected-row-bg: #fafafa;
+@table-padding-vertical: 16px;
+@table-padding-horizontal: 16px;
+
+// Tag
+// --
+@tag-default-bg: @background-color-light;
+@tag-default-color: @text-color;
+@tag-font-size: @font-size-sm;
+
+// TimePicker
+// ---
+@time-picker-panel-column-width: 56px;
+@time-picker-panel-width: @time-picker-panel-column-width * 3;
+@time-picker-selected-bg: @background-color-base;
+
+// Carousel
+// ---
+@carousel-dot-width: 16px;
+@carousel-dot-height: 3px;
+@carousel-dot-active-width: 24px;
+
+// Badge
+// ---
+@badge-height: 20px;
+@badge-dot-size: 6px;
+@badge-font-size: @font-size-sm;
+@badge-status-size: 6px;
+
+// Rate
+// ---
+@rate-star-color: @yellow-6;
+@rate-star-bg: @border-color-split;
+
+// Card
+// ---
+@card-head-color: @heading-color;
+@card-head-background: @component-background;
+@card-head-padding: 16px;
+@card-inner-head-padding: 12px;
+@card-padding-base: 24px;
+@card-padding-wider: 32px;
+@card-actions-background: @background-color-light;
+@card-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+
+// Tabs
+// ---
+@tabs-card-head-background: @background-color-light;
+@tabs-card-height: 40px;
+@tabs-title-font-size: @font-size-base;
+
+// BackTop
+// ---
+@back-top-color: #fff;
+@back-top-bg: @text-color-secondary;
+@back-top-hover-bg: @text-color;
+
+// Avatar
+// ---
+@avatar-size-base: 32px;
+@avatar-size-lg: 40px;
+@avatar-size-sm: 24px;
+@avatar-font-size-base: 18px;
+@avatar-font-size-lg: 24px;
+@avatar-font-size-sm: 14px;
+@avatar-bg: #ccc;
+@avatar-color: #fff;
+@avatar-border-radius: @border-radius-base;
+
+// Switch
+// ---
+@switch-height: 22px;
+@switch-sm-height: 16px;
+@switch-disabled-opacity: 0.4;
+
+// Pagination
+// ---
+@pagination-item-size: 32px;
+@pagination-item-size-sm: 24px;
