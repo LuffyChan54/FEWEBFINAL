@@ -1,4 +1,3 @@
-import "./LandingPage.css";
 import { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Spin } from "antd";
@@ -6,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import * as AuthService from "services/authService";
 import { useDispatch } from "react-redux";
 import { signin } from "@redux/reducer";
+import "./landingPage.css";
 
 type ParamsObject = {
   [key: string]: string;
