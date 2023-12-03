@@ -75,7 +75,7 @@ const AuthPage = () => {
         })
         .catch((err) => {
           console.log(err);
-          toast.warning(err?.response?.data.message[0], {
+          toast.warning(err?.response?.data.message, {
             theme: "colored",
           });
         })
@@ -97,7 +97,7 @@ const AuthPage = () => {
           })
           .catch((err) => {
             console.log(err);
-            toast.warning(err?.response?.data.message[0], {
+            toast.warning(err?.response?.data.message, {
               theme: "colored",
             });
           })
@@ -113,7 +113,7 @@ const AuthPage = () => {
             toast.success("Reset password successfully", { theme: "colored" });
           })
           .catch((err) => {
-            toast.warning(err?.response?.data.message[0], {
+            toast.warning(err?.response?.data.message, {
               theme: "colored",
             });
           })

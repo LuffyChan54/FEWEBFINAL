@@ -40,7 +40,7 @@ const LandingPage = () => {
         })
         .catch((err) => {
           console.log(err);
-          toast.warning(err?.response?.data.message[0], {
+          toast.warning(err?.response?.data.message, {
             theme: "colored",
           });
         })

@@ -22,7 +22,7 @@ const VerifyEmailPage = () => {
       })
       .catch((err) => {
         console.log(err);
-        toast.warning(err?.response?.data.message[0]);
+        toast.warning(err?.response?.data.message);
         setIsLoading(false);
       });
   };
