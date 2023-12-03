@@ -1,16 +1,7 @@
 import "./LandingPage.css";
-import { Suspense, useEffect, useRef, useState } from "react";
-import {
-  Await,
-  Link,
-  defer,
-  useLoaderData,
-  useLocation,
-  useNavigation,
-} from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Spin } from "antd";
-import { userClient } from "lib/axios";
-import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import * as AuthService from "services/authService";
 import { useDispatch } from "react-redux";
