@@ -16,7 +16,14 @@ export const updateUser = async (payload: UpdateUserOptions) => {
   return res.data;
 };
 
+export const verifyEmail = async () => {
+  const res = await userClient.post("/api/user/verify-email");
+  return res.data;
+};
+
 export const signout = async () => {
-  const res = await userClient.post("/auth/signout");
+  const res = await userClient.post("/api/user/logout", {
+    federated: true,
+  });
   return res.data;
 };

@@ -38,3 +38,7 @@ input {
 .primary {
   color: #4461f2;
 }
+
+.ant-btn-primary:focus {
+  outline: none;
+}

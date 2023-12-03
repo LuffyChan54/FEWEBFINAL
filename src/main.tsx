@@ -28,15 +28,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         },
       }}
     >
-      <Auth0Provider
-        domain={domain!}
-        clientId={clientId!}
-        authorizationParams={{
-          redirect_uri: "http://localhost:3000/home",
-        }}
-      >
-        <RouterProvider router={routes} />
-      </Auth0Provider>
+      <RouterProvider router={routes} />
     </ConfigProvider>
   </Provider>
 );
