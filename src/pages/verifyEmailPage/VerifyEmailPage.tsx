@@ -36,7 +36,7 @@ const VerifyEmailPage = () => {
   };
 
   return user.emailVerified ? (
-    <Navigate to="/home/overview" state={{ from: location }} replace />
+    <Navigate to="/home" state={{ from: location }} replace />
   ) : (
     <>
       <ToastContainer pauseOnHover></ToastContainer>

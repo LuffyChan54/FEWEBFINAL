@@ -6,8 +6,8 @@ import {
   NavigateFromProtectToUnProtectRoute,
   ProtectRouter,
 } from "components/auth";
-import OverviewPage from "pages/overviewPage/OverviewPage";
 import VerifyEmailPage from "pages/verifyEmailPage/VerifyEmailPage";
+import ClassPage from "pages/classPage/ClassPage";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -50,12 +50,12 @@ export const routes = createBrowserRouter([
         element: <HomePage />,
         children: [
           {
-            path: "/home/overview",
-            element: <OverviewPage />,
-          },
-          {
             path: "/home/verify_email",
             element: <VerifyEmailPage />,
+          },
+          {
+            path: "/home/class/:classID",
+            element: <ClassPage />,
           },
         ],
       },
