@@ -65,6 +65,11 @@ export default defineConfig({
         find: "hooks",
         replacement: path.resolve(__dirname, "src/hooks"),
       },
+
+      {
+        find: "helpers",
+        replacement: path.resolve(__dirname, "src/helpers"),
+      },
     ],
   },
 });

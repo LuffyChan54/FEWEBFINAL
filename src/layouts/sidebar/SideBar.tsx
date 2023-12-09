@@ -41,7 +41,7 @@ const SideBar = memo(() => {
   const classOverviews: ClassOverviewType[] = useSelector(getClassOVReducer);
 
   const resultClassOV = classOverviews.reduce((prev, curr) => {
-    if (curr.role == "teaching") {
+    if (curr.profile.role == "TEACHER" || curr.profile.role == "HOST") {
       if (prev.hasOwnProperty("teaching")) {
         (prev as any).teaching.push(curr);
       } else {
@@ -49,7 +49,7 @@ const SideBar = memo(() => {
       }
     }
 
-    if (curr.role == "learning") {
+    if (curr.profile.role == "STUDENT") {
       if (prev.hasOwnProperty("learning")) {
         (prev as any).learning.push(curr);
       } else {
@@ -60,13 +60,16 @@ const SideBar = memo(() => {
     return prev;
   }, {});
 
-  const { teaching, learning } = resultClassOV as {
+  let { teaching, learning } = resultClassOV as {
     teaching: ClassOverviewType[];
     learning: ClassOverviewType[];
   };
 
+  teaching = teaching === undefined ? [] : teaching;
+  learning = learning === undefined ? [] : learning;
+
   const items: MenuItem[] = [
-    getItem("Main screen", "home", <PieChartOutlined />, undefined, () => {
+    getItem("Home", "home", <PieChartOutlined />, undefined, () => {
       dispatch(setTabActive("home"));
       navigate("/home");
     }),
@@ -83,13 +86,13 @@ const SideBar = memo(() => {
           undefined,
           () => {
             dispatch(setTabActive(classTeaching.id));
-            navigate(`/home/class/${classTeaching.id}`);
+            navigate(`/home/course/${classTeaching.id}`);
           }
         )
       )
     ),
     getItem(
-      "Registed",
+      "Enrolled",
       "registed",
       <TeamOutlined />,
       learning.map((classLearning) =>
@@ -100,7 +103,7 @@ const SideBar = memo(() => {
           undefined,
           () => {
             dispatch(setTabActive(classLearning.id));
-            navigate(`/home/class/${classLearning.id}`);
+            navigate(`/home/course/${classLearning.id}`);
           }
         )
       )

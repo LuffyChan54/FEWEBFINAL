@@ -10,15 +10,42 @@ import ClassPeople from "components/classPeople/ClassPeople";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
+import { ClassEndpointWTID, getClassDetail } from "services/classService";
+import useSWR from "swr";
+import { ClassInfoType } from "types";
 
 const ClassPage = () => {
-  const { classID } = useParams();
+  const { courseId } = useParams();
   const dispatch = useDispatch();
+  let {
+    isLoading,
+    isValidating,
+    error,
+    data: classDetail,
+    mutate,
+  } = useSWR(ClassEndpointWTID + courseId, () => getClassDetail(courseId), {
+    onSuccess: (data) => {
+      return data;
+    },
+  });
 
   useEffect(() => {
-    dispatch(setTabActive(classID));
+    dispatch(setTabActive(courseId));
     return;
   });
+
+  if (classDetail == undefined) {
+    classDetail = {
+      id: "Pending...",
+      name: "Pending...",
+      desc: "Pending...",
+      code: "Pending...",
+      background: null,
+      createdAt: "Pending...",
+      attendees: [],
+      host: null,
+    };
+  }
 
   //TODO: IPLM OVERVIEW COMPONENT AND PEOPLE COMPONENT;
 
@@ -30,7 +57,12 @@ const ClassPage = () => {
         </>
       ),
       key: "overview",
-      children: <ClassOverview classID={classID} />,
+      children: (
+        <ClassOverview
+          classDetail={classDetail as ClassInfoType}
+          courseId={courseId}
+        />
+      ),
     },
     {
       label: (
@@ -39,7 +71,12 @@ const ClassPage = () => {
         </>
       ),
       key: "people",
-      children: <ClassPeople classID={classID} />,
+      children: (
+        <ClassPeople
+          classDetail={classDetail as ClassInfoType}
+          courseId={courseId}
+        />
+      ),
     },
     {
       label: (

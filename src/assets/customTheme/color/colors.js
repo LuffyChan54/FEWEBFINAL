@@ -28,6 +28,4 @@ Object.keys(base).map((key) => {
   }
 });
 
-console.log(colors);
-
 export default colors;

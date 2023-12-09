@@ -54,7 +54,7 @@ export const routes = createBrowserRouter([
             element: <VerifyEmailPage />,
           },
           {
-            path: "/home/class/:classID",
+            path: "/home/course/:courseId",
             element: <ClassPage />,
           },
         ],

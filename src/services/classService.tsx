@@ -1,8 +1,8 @@
 import { classClient } from "lib/axios";
 
-export const ClassEndpointWTID = "/get-class";
+export const ClassEndpointWTID = "/api/course/";
 
-export const getClassDetail = async (classID: string) => {
-  const res = await classClient.get(ClassEndpointWTID);
+export const getClassDetail = async (courseId: any) => {
+  const res = await classClient.get(ClassEndpointWTID + courseId);
   return res.data;
 };

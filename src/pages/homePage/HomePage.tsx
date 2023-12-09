@@ -1,11 +1,20 @@
-import { getAuthReducer, getClassOVReducer, update } from "@redux/reducer";
-import { Button, Card, Col, Flex, Input, Modal } from "antd";
+import { getAuthReducer, setClassOverview, update } from "@redux/reducer";
+import { Button, Card, Col, Flex, Input, Modal, message } from "antd";
 import GlobalLayout from "layouts/globalLayout/GlobalLayout";
 import { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Navigate, useNavigate, useOutlet } from "react-router-dom";
+import { useNavigate, useOutlet } from "react-router-dom";
 import * as userService from "services/userService";
+import useSWR, { preload } from "swr";
 import { ClassOverviewType } from "types";
+import {
+  getClassOV,
+  ClassOVEndpoint as cacheKeyClassOV,
+  createClassOV,
+  joinClassOV,
+} from "services/classOVService";
+import { addClassOptions } from "helpers";
+import { ClassEndpointWTID, getClassDetail } from "services/classService";
 
 interface VirtualInputRefType {
   input: {
@@ -15,7 +24,6 @@ interface VirtualInputRefType {
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const classOVs: ClassOverviewType[] = useSelector(getClassOVReducer);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const outlet = useOutlet();
   const stateModal = useRef("");
@@ -23,9 +31,9 @@ const HomePage = () => {
   const inputClassDescRef = useRef(null);
   const inputClassCodeRef = useRef(null);
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
 
   //checking
-
   const { token, user } = useSelector(getAuthReducer);
   if (!user.emailVerified) {
     userService
@@ -45,7 +53,60 @@ const HomePage = () => {
       });
   }
 
-  //TODO: HANLDE SWR
+  let {
+    isLoading,
+    isValidating,
+    error,
+    data: classOVs,
+    mutate,
+  } = useSWR(cacheKeyClassOV, getClassOV, {
+    onSuccess: (data) => {
+      // console.log("SWR on success: ", data);
+      dispatch(setClassOverview(data));
+      return data.sort((a: ClassOverviewType, b: ClassOverviewType) => {
+        const dateA = new Date(a.profile.joinedAt);
+        const dateB = new Date(b.profile.joinedAt);
+
+        if (dateA < dateB) {
+          return 1;
+        } else {
+          if (dateA > dateB) {
+            return -1;
+          } else {
+            return 0;
+          }
+        }
+      });
+    },
+  });
+
+  const addClassOVMutation = async (newClassOV: any) => {
+    messageApi.loading("Creating new course...");
+    try {
+      await mutate(
+        createClassOV(newClassOV, classOVs),
+        addClassOptions(newClassOV, classOVs)
+      );
+
+      messageApi.success("Success! Added new class 🎉.");
+      // dispatch(setClassOverview(classOVs));
+    } catch (err) {
+      messageApi.error("Failed to add the new class.");
+    }
+  };
+
+  const joinClassOVMutation = async (classCode: any) => {
+    messageApi.loading("Joining new course...");
+
+    try {
+      const newClassOVS = await mutate(joinClassOV(classCode, classOVs));
+      // console.log("join class", newClassOVS);
+      dispatch(setClassOverview(newClassOVS));
+      messageApi.success("Success! Joined new class 🎉.");
+    } catch (err) {
+      messageApi.error("Failed to add the new class.");
+    }
+  };
 
   //handle function
   const showModal = () => {
@@ -63,7 +124,7 @@ const HomePage = () => {
         inputClassDescRef.current as unknown as VirtualInputRefType;
       const classDesc: string = refInputClassDesc.input.value;
 
-      console.log(className, classDesc);
+      addClassOVMutation({ name: className, desc: classDesc });
     }
 
     if (state == "Join Class") {
@@ -71,7 +132,7 @@ const HomePage = () => {
         inputClassCodeRef.current as unknown as VirtualInputRefType;
       const classCode: string = refInputClassCode.input.value;
 
-      console.log(classCode);
+      joinClassOVMutation(classCode);
     }
 
     setIsModalOpen(false);
@@ -82,7 +143,7 @@ const HomePage = () => {
   };
 
   const handleCardClick = (id: any) => {
-    navigate("/home/class/" + id);
+    navigate("/home/course/" + id);
   };
 
   const homePageElement = (
@@ -151,27 +212,40 @@ const HomePage = () => {
         gap="50px"
         // style={{ background: "#f0f2f5", padding: "20px" }}
       >
-        {classOVs.map((el) => (
-          <Col span={7} key={el.id}>
-            <Card
-              title={el.name}
-              bordered={false}
-              style={{
-                cursor: "pointer",
-              }}
-              onClick={() => handleCardClick(el.id)}
-            >
-              <h5>{el.desc}</h5>
-              <i>{el.host_name}</i>
-            </Card>
-          </Col>
-        ))}
+        {classOVs?.map((el: ClassOverviewType) => {
+          preload(ClassEndpointWTID + el.code, () => getClassDetail(el.code));
+          return (
+            <Col span={7} key={el.id}>
+              <Card
+                title={el.name}
+                bordered={false}
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => handleCardClick(el.id)}
+              >
+                <h6 style={{ marginBottom: "15px" }}>{el.desc}</h6>
+                <p style={{ marginBottom: "2px" }}>
+                  Joined At: {el.profile.joinedAt?.split("T")[0]}
+                </p>
+                <p style={{ marginBottom: "2px" }}>
+                  Your role: {el.profile.role}
+                </p>
+                <p style={{ marginBottom: "2px" }}>
+                  Course created at: {el.createdAt.split("T")[0]}
+                </p>
+                <i>Host by: {el.host.name}</i>
+              </Card>
+            </Col>
+          );
+        })}
       </Flex>
     </div>
   );
 
   return (
     <GlobalLayout>
+      {contextHolder}
       <div
         style={{
           padding: 24,

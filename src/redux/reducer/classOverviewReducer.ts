@@ -1,28 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { ClassOverviewType } from "types";
-const defaultState: ClassOverviewType[] = [
-  {
-    id: "teaching_1",
-    name: "class 1",
-    host_name: "host 1",
-    desc: "desc1",
-    role: "teaching",
-  },
-  {
-    id: "teaching_3",
-    name: "class 3",
-    host_name: "host 3",
-    desc: "desc3",
-    role: "teaching",
-  },
-  {
-    id: "teaching_2",
-    name: "class 2",
-    host_name: "host 2",
-    desc: "desc2",
-    role: "learning",
-  },
-];
+const defaultState: ClassOverviewType[] = [];
 
 const classOverviewSlice = createSlice({
   name: "classOverview",

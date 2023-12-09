@@ -126,13 +126,9 @@ interface Notice {
   extra: any;
   // Add other properties as needed
 }
-function onItemClick(item: any, tabProps: any) {
-  console.log(item, tabProps);
-}
+function onItemClick(item: any, tabProps: any) {}
 
-function onClear(tabTitle: any) {
-  console.log(tabTitle);
-}
+function onClear(tabTitle: any) {}
 
 function getNoticeData(notices: any) {
   if (notices.length === 0) {

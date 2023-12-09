@@ -1,7 +1,12 @@
+import { Attendee } from "./ClassInfoType";
+
 export interface ClassOverviewType {
   id: string;
   name: string;
   desc: string;
-  host_name: string;
-  role: string;
+  code: string;
+  background: null;
+  createdAt: string;
+  host: Attendee;
+  profile: Attendee;
 }

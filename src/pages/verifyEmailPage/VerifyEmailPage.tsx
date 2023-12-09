@@ -16,7 +16,7 @@ const VerifyEmailPage = () => {
     userService
       .verifyEmail()
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         toast.success("Email was sent!");
         setIsLoading(false);
       })
