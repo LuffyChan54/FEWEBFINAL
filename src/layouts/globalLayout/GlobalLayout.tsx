@@ -22,7 +22,15 @@ const GlobalLayout: React.FC<GlobalLayoutProps> = ({ children }) => {
     <Layout style={{ minHeight: "100vh" }}>
       <SideBar />
       <Layout>
-        <Header style={{ padding: "0 16px", background: colorBgContainer }}>
+        <Header
+          style={{
+            padding: "0 16px",
+            background: colorBgContainer,
+            position: "sticky",
+            top: "0px",
+            zIndex: "10",
+          }}
+        >
           <TopNav />
         </Header>
         <Content style={{ margin: "0 16px" }}>

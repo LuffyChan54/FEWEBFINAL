@@ -3,6 +3,7 @@ import { getAuthReducer } from "@redux/reducer";
 import { AnyAsyncThunk } from "@reduxjs/toolkit/dist/matchers";
 import { Descriptions, DescriptionsProps, Flex, Layout, message } from "antd";
 import { useCopyToClipboard } from "hooks";
+import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { ClassEndpointWTID, getClassDetail } from "services/classService";
@@ -17,37 +18,37 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
   const { courseId: currCourseId } = useParams();
   preload(ClassEndpointWTID + currCourseId, () => getClassDetail(currCourseId));
 
-  console.log("class Detail:", classDetail);
-
   const { user } = useSelector(getAuthReducer);
-  let classInfo: ClassInfoType = classDetail;
-  if (classInfo) {
-    classInfo = {
-      id: "Pending...",
-      name: "Pending...",
-      desc: "Pending...",
-      code: "Pending...",
-      background: null,
-      createdAt: "Pending...",
-      attendees: [],
-      host: {
-        userId: "Pending...",
-        courseId: "Pending...",
-        email: "Pending...",
-        role: "HOST",
-        invitationId: "Pending...",
-        joinedAt: "Pending...",
-        name: "Pending...",
-        picture: "Pending...",
-      },
-    };
-  }
 
   const [messageApi, contextHolder] = message.useMessage();
   const [value, copy] = useCopyToClipboard();
 
+  const isFinishLoadingFirstTime = useRef(0);
+
+  useEffect(() => {
+    if (classDetail.code === "Pending...") {
+      messageApi.open({
+        key: "getCourseOV",
+        type: "loading",
+        content: "Loading...",
+        duration: 0,
+      });
+    } else {
+      isFinishLoadingFirstTime.current++;
+      if (isFinishLoadingFirstTime.current == 1) {
+        messageApi.open({
+          key: "getCourseOV",
+          type: "success",
+          content: "Success! Loaded course Info 🎉.",
+          duration: 2,
+        });
+      }
+    }
+    return;
+  });
+
   const handleCopyToClipboard = () => {
-    copy(classInfo?.code);
+    copy(classDetail?.code);
     messageApi.open({
       key: "copy_success",
       type: "success",
@@ -75,20 +76,20 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
     {
       key: "class_name",
       label: "Class name",
-      children: classInfo ? classInfo.name : "pending...",
+      children: classDetail ? classDetail.name : "pending...",
     },
     {
       key: "class_desc",
       label: "Descriptions",
-      children: classInfo ? classInfo.desc : "pending...",
+      children: classDetail ? classDetail.desc : "pending...",
     },
     {
       key: "joined_at",
       label: "Joined At",
       children: myProfile
         ? myProfile.joinedAt?.split("T")[0]
-        : classInfo.host?.userId == user?.userId
-        ? classInfo.host.joinedAt?.split("T")[0]
+        : classDetail.host?.userId == user?.userId
+        ? classDetail.host.joinedAt?.split("T")[0]
         : "Pending...",
     },
 
@@ -97,7 +98,7 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
       label: "Class code",
       children: (
         <>
-          <h6> {classInfo.code} </h6>{" "}
+          <h6> {classDetail.code} </h6>{" "}
           <CopyOutlined
             style={{ marginLeft: "10px", marginTop: "2px", cursor: "pointer" }}
             onClick={handleCopyToClipboard}
@@ -108,17 +109,19 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
     {
       key: "created_at",
       label: "Created At",
-      children: classInfo ? classInfo.createdAt.split("T")[0] : "pending...", //TODO: get joined at
+      children: classDetail
+        ? classDetail.createdAt.split("T")[0]
+        : "pending...", //TODO: get joined at
     },
     {
       key: "total_attendees",
       label: "Toal Attendees",
-      children: classInfo ? classInfo.attendees.length : "pending...",
+      children: classDetail ? classDetail.attendees.length + 1 : "pending...",
     },
     {
       key: "Host",
       label: "Host",
-      children: classInfo.host ? classInfo.host.name : "Pending...",
+      children: classDetail.host ? classDetail.host.name : "Pending...",
     },
   ];
   return (

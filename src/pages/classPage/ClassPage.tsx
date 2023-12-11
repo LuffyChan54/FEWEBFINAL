@@ -4,7 +4,7 @@ import {
   FileDoneOutlined,
 } from "@ant-design/icons";
 import { setTabActive } from "@redux/reducer";
-import { Tabs, TabsProps } from "antd";
+import { Tabs, TabsProps, message } from "antd";
 import ClassOverview from "components/classOverview/ClassOverview";
 import ClassPeople from "components/classPeople/ClassPeople";
 import { useEffect } from "react";
@@ -17,6 +17,7 @@ import { ClassInfoType } from "types";
 const ClassPage = () => {
   const { courseId } = useParams();
   const dispatch = useDispatch();
+  const [messageApi, contextHolder] = message.useMessage();
   let {
     isLoading,
     isValidating,
@@ -95,6 +96,7 @@ const ClassPage = () => {
 
   return (
     <>
+      {contextHolder}
       <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
     </>
   );

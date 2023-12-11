@@ -14,6 +14,9 @@ export const classOVClient = axios.create({
 export const classClient = axios.create({
   baseURL: import.meta.env.VITE_COURSE_URL,
 });
+export const inviteClient = axios.create({
+  baseURL: import.meta.env.VITE_COURSE_URL,
+});
 
 const getRefreshToken = async (token: string) => {
   const res = await axios.post(
@@ -69,5 +72,9 @@ classOVClient.interceptors.request.use(configFunction, (err) => {
 });
 
 classClient.interceptors.request.use(configFunction, (err) => {
+  return Promise.reject(err);
+});
+
+inviteClient.interceptors.request.use(configFunction, (err) => {
   return Promise.reject(err);
 });

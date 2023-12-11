@@ -8,6 +8,7 @@ import {
 } from "components/auth";
 import VerifyEmailPage from "pages/verifyEmailPage/VerifyEmailPage";
 import ClassPage from "pages/classPage/ClassPage";
+import TemporaryPage from "pages/temporary/TemporaryPage";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -60,5 +61,9 @@ export const routes = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: "/course/attendee",
+    element: <TemporaryPage />,
   },
 ]);

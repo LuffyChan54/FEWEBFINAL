@@ -123,6 +123,7 @@ const SideBar = memo(() => {
     >
       <div className="demo-logo-vertical" />
       <Menu
+        style={{ position: "sticky", top: "0px" }}
         theme="dark"
         selectedKeys={[idTabActive]}
         mode="inline"

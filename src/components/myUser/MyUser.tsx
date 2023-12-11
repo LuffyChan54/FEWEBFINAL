@@ -20,11 +20,14 @@ const MyUser = memo(() => {
       .then(() => {
         dispatch(logout({}));
         navigate("/auth");
-        setIsLoadingLogout(true);
+        setIsLoadingLogout(false);
       })
       .then((err) => {
         console.log(err);
-        setIsLoadingLogout(true);
+        setIsLoadingLogout(false);
+      })
+      .finally(() => {
+        setIsLoadingLogout(false);
       });
   };
 

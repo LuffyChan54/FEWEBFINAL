@@ -1,6 +1,17 @@
-import { Button, Modal, Space, Table, Tabs, TabsProps, Tag } from "antd";
+import {
+  Button,
+  Input,
+  Modal,
+  Space,
+  Table,
+  Tabs,
+  TabsProps,
+  Tag,
+  message,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import { useRef, useState } from "react";
+import { sendInvitationEmail } from "services/inviteService";
 import { Attendee, ClassInfoType } from "types";
 
 interface ClassPeopleProps {
@@ -47,7 +58,9 @@ const columns: ColumnsType<dataTableType> = [
 
 const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const stateFormInvateRef = useRef("");
+  const inputAntdRef: any = useRef(null);
+  const [messageApi, contextHolder] = message.useMessage();
   let Teachers: dataTableType[] = [];
   let Students: dataTableType[] = [];
   classDetail.attendees.forEach((el) => {
@@ -88,7 +101,50 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
     setIsModalOpen(true);
   };
   const handleOk = () => {
+    const emailsStr = inputAntdRef.current.input.value;
     setIsModalOpen(false);
+    messageApi.open({
+      key: "inviteTeacher",
+      type: "loading",
+      content: "Loading...",
+      duration: 0,
+    });
+    let dataInvite = [];
+    if (stateFormInvateRef.current === "teacher") {
+      dataInvite = emailsStr.split(",").map((e: any) => {
+        return {
+          email: e.trim(),
+          role: "TEACHER",
+        };
+      });
+    }
+
+    if (stateFormInvateRef.current === "student") {
+      dataInvite = emailsStr.split(",").map((e: any) => {
+        return {
+          email: e.trim(),
+          role: "STUDENT",
+        };
+      });
+    }
+
+    sendInvitationEmail(dataInvite, courseId)
+      .then(() => {
+        messageApi.open({
+          key: "inviteTeacher",
+          type: "success",
+          content: "Success! Invited! 🎉.",
+          duration: 2,
+        });
+      })
+      .catch(() => {
+        messageApi.open({
+          key: "inviteTeacher",
+          type: "error",
+          content: "Fail! Invite Failed.",
+          duration: 2,
+        });
+      });
   };
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -99,7 +155,13 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
       key: "Teachers",
       children: (
         <>
-          <Button type="primary" onClick={() => showModal()}>
+          <Button
+            type="primary"
+            onClick={() => {
+              stateFormInvateRef.current = "teacher";
+              showModal();
+            }}
+          >
             Invite New Teacher
           </Button>
           <Table
@@ -116,7 +178,13 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
       key: "Students",
       children: (
         <>
-          <Button type="primary" onClick={() => showModal()}>
+          <Button
+            type="primary"
+            onClick={() => {
+              stateFormInvateRef.current = "student";
+              showModal();
+            }}
+          >
             Invite New Student
           </Button>
 
@@ -133,13 +201,16 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
 
   return (
     <>
+      {contextHolder}
       <Modal
         key="class_people_invite_student"
         title="Invite By Email"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-      ></Modal>
+      >
+        <Input ref={inputAntdRef} type="email" placeholder="email" />
+      </Modal>
       <Tabs
         defaultActiveKey="Teachers"
         type="card"

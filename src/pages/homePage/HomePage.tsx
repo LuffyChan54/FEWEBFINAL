@@ -1,7 +1,7 @@
 import { getAuthReducer, setClassOverview, update } from "@redux/reducer";
 import { Button, Card, Col, Flex, Input, Modal, message } from "antd";
 import GlobalLayout from "layouts/globalLayout/GlobalLayout";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useOutlet } from "react-router-dom";
 import * as userService from "services/userService";
@@ -23,6 +23,12 @@ interface VirtualInputRefType {
 }
 
 const HomePage = () => {
+  const nextRedirectURL = localStorage.getItem("nextRedirectURL");
+  if (nextRedirectURL) {
+    localStorage.removeItem("nextRedirectURL");
+    window.location = nextRedirectURL as any;
+  }
+
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const outlet = useOutlet();
@@ -80,31 +86,83 @@ const HomePage = () => {
     },
   });
 
+  const isFinishLoadingFirstTime = useRef(0);
+  useEffect(() => {
+    if (!classOVs && isFinishLoadingFirstTime.current == 0) {
+      messageApi.open({
+        key: "loadingCourses",
+        type: "loading",
+        content: "Loading courses...",
+        duration: 0,
+      });
+    }
+
+    if (classOVs) {
+      isFinishLoadingFirstTime.current++;
+      if (isFinishLoadingFirstTime.current == 1) {
+        messageApi.open({
+          key: "loadingCourses",
+          type: "success",
+          content: "Success! Loaded courses 🎉.",
+          duration: 2,
+        });
+      }
+    }
+  });
+
   const addClassOVMutation = async (newClassOV: any) => {
-    messageApi.loading("Creating new course...");
+    messageApi.open({
+      key: "addingCourse",
+      type: "loading",
+      content: "Creating new course...",
+      duration: 0,
+    });
     try {
       await mutate(
         createClassOV(newClassOV, classOVs),
         addClassOptions(newClassOV, classOVs)
       );
-
-      messageApi.success("Success! Added new class 🎉.");
+      messageApi.open({
+        key: "addingCourse",
+        type: "success",
+        content: "Success! Added new course 🎉.",
+        duration: 2,
+      });
       // dispatch(setClassOverview(classOVs));
     } catch (err) {
-      messageApi.error("Failed to add the new class.");
+      messageApi.open({
+        key: "addingCourse",
+        type: "error",
+        content: "Failed to add the new course.",
+        duration: 2,
+      });
     }
   };
 
   const joinClassOVMutation = async (classCode: any) => {
-    messageApi.loading("Joining new course...");
-
+    messageApi.open({
+      key: "joiningCourse",
+      type: "loading",
+      content: "Joining new course...",
+      duration: 0,
+    });
     try {
       const newClassOVS = await mutate(joinClassOV(classCode, classOVs));
       // console.log("join class", newClassOVS);
       dispatch(setClassOverview(newClassOVS));
-      messageApi.success("Success! Joined new class 🎉.");
+      messageApi.open({
+        key: "joiningCourse",
+        type: "success",
+        content: "Success! Joined new course 🎉.",
+        duration: 2,
+      });
     } catch (err) {
-      messageApi.error("Failed to add the new class.");
+      messageApi.open({
+        key: "joiningCourse",
+        type: "error",
+        content: "Failed to add the new course.",
+        duration: 2,
+      });
     }
   };
 
@@ -115,7 +173,7 @@ const HomePage = () => {
 
   const handleOk = () => {
     const state = stateModal.current;
-    if (state == "Add Class") {
+    if (state == "Add Course") {
       const refInputClassName: VirtualInputRefType =
         inputClassNameRef.current as unknown as VirtualInputRefType;
       const className: string = refInputClassName.input.value;
@@ -127,7 +185,7 @@ const HomePage = () => {
       addClassOVMutation({ name: className, desc: classDesc });
     }
 
-    if (state == "Join Class") {
+    if (state == "Join Course") {
       const refInputClassCode: VirtualInputRefType =
         inputClassCodeRef.current as unknown as VirtualInputRefType;
       const classCode: string = refInputClassCode.input.value;
@@ -154,20 +212,20 @@ const HomePage = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        {stateModal.current == "Add Class" ? (
+        {stateModal.current == "Add Course" ? (
           <>
             <label>Class name:</label>
             <Input
               ref={inputClassNameRef}
               key="input_home_class_name"
-              placeholder="Class name"
+              placeholder="Course name"
             />
 
             <label>Class descriptions:</label>
             <Input
               ref={inputClassDescRef}
               key="input_home_class_desc"
-              placeholder="Class descriptions"
+              placeholder="Course descriptions"
             />
           </>
         ) : (
@@ -176,7 +234,7 @@ const HomePage = () => {
             <Input
               ref={inputClassCodeRef}
               key="input_home_class_code"
-              placeholder="Class Code"
+              placeholder="Course Code"
             />
           </>
         )}
@@ -191,7 +249,7 @@ const HomePage = () => {
         <Button
           type="primary"
           onClick={() => {
-            stateModal.current = "Add Class";
+            stateModal.current = "Add Course";
             showModal();
           }}
         >
@@ -200,7 +258,7 @@ const HomePage = () => {
 
         <Button
           onClick={() => {
-            stateModal.current = "Join Class";
+            stateModal.current = "Join Course";
             showModal();
           }}
         >
