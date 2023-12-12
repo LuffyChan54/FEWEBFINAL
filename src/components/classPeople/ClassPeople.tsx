@@ -11,7 +11,9 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { useRef, useState } from "react";
+import { ClassEndpointWTID, getClassDetail } from "services/classService";
 import { sendInvitationEmail } from "services/inviteService";
+import { preload } from "swr";
 import { Attendee, ClassInfoType } from "types";
 
 interface ClassPeopleProps {
@@ -57,6 +59,8 @@ const columns: ColumnsType<dataTableType> = [
 ];
 
 const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
+  // preload(ClassEndpointWTID + courseId, () => getClassDetail(courseId));
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const stateFormInvateRef = useRef("");
   const inputAntdRef: any = useRef(null);

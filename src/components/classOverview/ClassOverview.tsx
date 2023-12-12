@@ -16,7 +16,6 @@ interface ClassOverviewProps {
 
 const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
   const { courseId: currCourseId } = useParams();
-  preload(ClassEndpointWTID + currCourseId, () => getClassDetail(currCourseId));
 
   const { user } = useSelector(getAuthReducer);
 

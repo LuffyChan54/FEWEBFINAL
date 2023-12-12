@@ -30,7 +30,7 @@ const TemporaryPage = () => {
             content: "Success! Joined course 🎉.",
             duration: 3,
           });
-          window.location = `/home/course/${data.code}` as any;
+          window.location = `/home/course/${data.id}` as any;
         })
         .catch(() => {
           messageApi.open({

@@ -1,7 +1,7 @@
 import { getAuthReducer, setClassOverview, update } from "@redux/reducer";
 import { Button, Card, Col, Flex, Input, Modal, message } from "antd";
 import GlobalLayout from "layouts/globalLayout/GlobalLayout";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useOutlet } from "react-router-dom";
 import * as userService from "services/userService";
@@ -22,7 +22,7 @@ interface VirtualInputRefType {
   };
 }
 
-const HomePage = () => {
+const HomePage = memo(() => {
   const nextRedirectURL = localStorage.getItem("nextRedirectURL");
   if (nextRedirectURL) {
     localStorage.removeItem("nextRedirectURL");
@@ -41,23 +41,6 @@ const HomePage = () => {
 
   //checking
   const { token, user } = useSelector(getAuthReducer);
-  if (!user.emailVerified) {
-    userService
-      .getUser()
-      .then((res) => {
-        const payload = {
-          email: res.email,
-          emailVerified: res.emailVerified,
-          name: res.name,
-          picture: res.picture,
-        };
-        dispatch(update(payload));
-        // console.log(payload);
-      })
-      .catch((err) => {
-        console.log("fetch error:", err);
-      });
-  }
 
   let {
     isLoading,
@@ -88,6 +71,24 @@ const HomePage = () => {
 
   const isFinishLoadingFirstTime = useRef(0);
   useEffect(() => {
+    if (!user.emailVerified) {
+      userService
+        .getUser()
+        .then((res) => {
+          const payload = {
+            email: res.email,
+            emailVerified: res.emailVerified,
+            name: res.name,
+            picture: res.picture,
+          };
+          dispatch(update(payload));
+          // console.log(payload);
+        })
+        .catch((err) => {
+          console.log("fetch error:", err);
+        });
+    }
+
     if (!classOVs && isFinishLoadingFirstTime.current == 0) {
       messageApi.open({
         key: "loadingCourses",
@@ -118,17 +119,19 @@ const HomePage = () => {
       duration: 0,
     });
     try {
-      await mutate(
+      const newClassOVS = await mutate(
         createClassOV(newClassOV, classOVs),
         addClassOptions(newClassOV, classOVs)
       );
+
       messageApi.open({
         key: "addingCourse",
         type: "success",
         content: "Success! Added new course 🎉.",
         duration: 2,
       });
-      // dispatch(setClassOverview(classOVs));
+
+      dispatch(setClassOverview(newClassOVS));
     } catch (err) {
       messageApi.open({
         key: "addingCourse",
@@ -271,7 +274,7 @@ const HomePage = () => {
         // style={{ background: "#f0f2f5", padding: "20px" }}
       >
         {classOVs?.map((el: ClassOverviewType) => {
-          preload(ClassEndpointWTID + el.code, () => getClassDetail(el.code));
+          // preload(ClassEndpointWTID + el.code, () => getClassDetail(el.code));
           return (
             <Col span={7} key={el.id}>
               <Card
@@ -315,6 +318,6 @@ const HomePage = () => {
       </div>
     </GlobalLayout>
   );
-};
+});
 
 export default HomePage;

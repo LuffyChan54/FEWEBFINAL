@@ -2,21 +2,24 @@ import {
   HomeOutlined,
   TeamOutlined,
   FileDoneOutlined,
+  ReloadOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
 import { setTabActive } from "@redux/reducer";
 import { Tabs, TabsProps, message } from "antd";
 import ClassOverview from "components/classOverview/ClassOverview";
 import ClassPeople from "components/classPeople/ClassPeople";
-import { useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { ClassEndpointWTID, getClassDetail } from "services/classService";
 import useSWR from "swr";
 import { ClassInfoType } from "types";
 
-const ClassPage = () => {
+const ClassPage = memo(() => {
   const { courseId } = useParams();
   const dispatch = useDispatch();
+  const [isReloading, setIsReloading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   let {
     isLoading,
@@ -26,6 +29,8 @@ const ClassPage = () => {
     mutate,
   } = useSWR(ClassEndpointWTID + courseId, () => getClassDetail(courseId), {
     onSuccess: (data) => {
+      console.log("loading");
+      setIsReloading(false);
       return data;
     },
   });
@@ -94,12 +99,29 @@ const ClassPage = () => {
     // console.log(key);
   };
 
+  const reloadClassInfo = () => {
+    setIsReloading(true);
+    mutate();
+    // setTimeout(() => {
+    //   setIsReloading(false);
+    // }, 5000);
+  };
+
   return (
     <>
       {contextHolder}
+      {isReloading ? (
+        <LoadingOutlined style={{ color: "#24b675", fontSize: "20px" }} />
+      ) : (
+        <ReloadOutlined
+          style={{ color: "#24b675", fontSize: "20px", cursor: "pointer" }}
+          onClick={() => reloadClassInfo()}
+        />
+      )}
+
       <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
     </>
   );
-};
+});
 
 export default ClassPage;
