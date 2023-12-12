@@ -1,4 +1,3 @@
-import axios from "axios";
 import { authClient } from "lib/axios";
 import { userClient } from "lib/axios";
 import { getNextExpiresTime } from "utils/expiresTime";
@@ -29,10 +28,12 @@ export const signin = async (payload: SigninOptions) => {
       Authorization: "Bearer " + accessToken,
     },
   });
+
   const user = resUser.data;
 
   return {
     userInfo: {
+      userId: user.userId,
       email: user.email,
       emailVerified: user.emailVerified,
       name: user.name,
@@ -82,8 +83,11 @@ export const getTokenSocialLogin = async (code: string) => {
   });
   const user = resUser.data;
 
+  // console.log(user);
+
   return {
     userInfo: {
+      userId: user.userId,
       email: user.email,
       emailVerified: user.emailVerified,
       name: user.name,

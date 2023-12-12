@@ -6,10 +6,12 @@ import "./assets/style.css";
 import "react-toastify/dist/ReactToastify.css";
 import { store } from "@redux";
 import { ConfigProvider } from "antd";
-import { Auth0Provider } from "@auth0/auth0-react";
-
-const domain = import.meta.env.VITE_AUTH0_DOMAIN;
-const clientId = import.meta.env.VITE_AUTH0_CLIENTID;
+import { preload } from "swr";
+import {
+  getClassOV,
+  ClassOVEndpoint as cacheKey,
+} from "services/classOVService";
+preload(cacheKey, getClassOV);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Provider store={store}>

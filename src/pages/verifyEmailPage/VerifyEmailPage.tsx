@@ -16,7 +16,7 @@ const VerifyEmailPage = () => {
     userService
       .verifyEmail()
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         toast.success("Email was sent!");
         setIsLoading(false);
       })
@@ -36,7 +36,7 @@ const VerifyEmailPage = () => {
   };
 
   return user.emailVerified ? (
-    <Navigate to="/home/overview" state={{ from: location }} replace />
+    <Navigate to="/home" state={{ from: location }} replace />
   ) : (
     <>
       <ToastContainer pauseOnHover></ToastContainer>

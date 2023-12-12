@@ -55,6 +55,21 @@ export default defineConfig({
         find: "services",
         replacement: path.resolve(__dirname, "src/services"),
       },
+
+      {
+        find: "types",
+        replacement: path.resolve(__dirname, "src/types"),
+      },
+
+      {
+        find: "hooks",
+        replacement: path.resolve(__dirname, "src/hooks"),
+      },
+
+      {
+        find: "helpers",
+        replacement: path.resolve(__dirname, "src/helpers"),
+      },
     ],
   },
 });

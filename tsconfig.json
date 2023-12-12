@@ -35,7 +35,13 @@
       "routes": ["./src/routes"],
       "routes/*": ["./src/routes/*"],
       "services": ["./src/services"],
-      "services/*": ["./src/services/*"]
+      "services/*": ["./src/services/*"],
+      "types": ["./src/types"],
+      "types/*": ["./src/types/*"],
+      "hooks": ["./src/hooks"],
+      "hooks/*": ["./src/hooks/*"],
+      "helpers": ["./src/helpers"],
+      "helpers/*": ["./src/helpers/*"]
     }
   },
   "include": ["src"],
