@@ -3,11 +3,23 @@ import { ClassInfoType } from "types";
 
 const defaultState: ClassInfoType[] = [
   {
-    id: "idd",
+    id: "string",
     name: "string",
-    desc: "desc",
-    host_name: "host",
-    code: "code",
+    desc: "string",
+    code: "string",
+    background: null,
+    createdAt: "string",
+    attendees: [],
+    host: {
+      userId: "string",
+      courseId: "string",
+      email: "string",
+      role: "string",
+      invitationId: "string",
+      joinedAt: "string",
+      name: "string",
+      picture: "string",
+    },
   },
 ];
 
