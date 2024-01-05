@@ -4,7 +4,7 @@ import { Badge, Dropdown, Space, Avatar, Spin } from "antd";
 
 import { memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import * as userService from "services/userService";
 
 const MyUser = memo(() => {
@@ -36,6 +36,9 @@ const MyUser = memo(() => {
       label: "User Info",
       key: "Info",
       icon: <UserOutlined />,
+      onClick: () => {
+        navigate("/home/user_info");
+      },
     },
     {
       label: "Verify Email",

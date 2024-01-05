@@ -14,7 +14,6 @@ import {
   joinClassOV,
 } from "services/classOVService";
 import { addClassOptions } from "helpers";
-import { ClassEndpointWTID, getClassDetail } from "services/classService";
 
 interface VirtualInputRefType {
   input: {
