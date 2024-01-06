@@ -1,5 +1,5 @@
 import { getAuthReducer, setClassOverview, update } from "@redux/reducer";
-import { Button, Card, Col, Flex, Input, Modal, message } from "antd";
+import { Button, Card, Col, Flex, Input, Modal, Skeleton, message } from "antd";
 import GlobalLayout from "layouts/globalLayout/GlobalLayout";
 import { memo, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,7 +27,8 @@ const HomePage = memo(() => {
     localStorage.removeItem("nextRedirectURL");
     window.location = nextRedirectURL as any;
   }
-
+  const [isFetchingClassesFirstTime, setIsFetchingClassesFirstTime] =
+    useState(true);
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const outlet = useOutlet();
@@ -89,23 +90,24 @@ const HomePage = memo(() => {
     }
 
     if (!classOVs && isFinishLoadingFirstTime.current == 0) {
-      messageApi.open({
-        key: "loadingCourses",
-        type: "loading",
-        content: "Loading courses...",
-        duration: 0,
-      });
+      // messageApi.open({
+      //   key: "loadingCourses",
+      //   type: "loading",
+      //   content: "Loading courses...",
+      //   duration: 0,
+      // });
     }
 
     if (classOVs) {
       isFinishLoadingFirstTime.current++;
       if (isFinishLoadingFirstTime.current == 1) {
-        messageApi.open({
-          key: "loadingCourses",
-          type: "success",
-          content: "Success! Loaded courses 🎉.",
-          duration: 2,
-        });
+        // messageApi.open({
+        //   key: "loadingCourses",
+        //   type: "success",
+        //   content: "Success! Loaded courses 🎉.",
+        //   duration: 2,
+        // });
+        setIsFetchingClassesFirstTime(false);
       }
     }
   });
@@ -267,39 +269,48 @@ const HomePage = memo(() => {
           Join class
         </Button>
       </Flex>
-      <Flex
-        wrap="wrap"
-        gap="50px"
-        // style={{ background: "#f0f2f5", padding: "20px" }}
-      >
-        {classOVs?.map((el: ClassOverviewType) => {
-          // preload(ClassEndpointWTID + el.code, () => getClassDetail(el.code));
-          return (
-            <Col span={7} key={el.id}>
-              <Card
-                title={el.name}
-                bordered={false}
-                style={{
-                  cursor: "pointer",
-                }}
-                onClick={() => handleCardClick(el.id)}
-              >
-                <h6 style={{ marginBottom: "15px" }}>{el.desc}</h6>
-                <p style={{ marginBottom: "2px" }}>
-                  Joined At: {el.profile.joinedAt?.split("T")[0]}
-                </p>
-                <p style={{ marginBottom: "2px" }}>
-                  Your role: {el.profile.role}
-                </p>
-                <p style={{ marginBottom: "2px" }}>
-                  Course created at: {el.createdAt.split("T")[0]}
-                </p>
-                <i>Host by: {el.host.name}</i>
-              </Card>
-            </Col>
-          );
-        })}
-      </Flex>
+
+      {isFetchingClassesFirstTime ? (
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <Skeleton active style={{ width: "30%" }} />
+          <Skeleton active style={{ width: "30%" }} />
+          <Skeleton active style={{ width: "30%" }} />
+        </div>
+      ) : (
+        <Flex
+          wrap="wrap"
+          gap="50px"
+          // style={{ background: "#f0f2f5", padding: "20px" }}
+        >
+          {classOVs?.map((el: ClassOverviewType) => {
+            // preload(ClassEndpointWTID + el.code, () => getClassDetail(el.code));
+            return (
+              <Col span={7} key={el.id}>
+                <Card
+                  title={el.name}
+                  bordered={false}
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleCardClick(el.id)}
+                >
+                  <h6 style={{ marginBottom: "15px" }}>{el.desc}</h6>
+                  <p style={{ marginBottom: "2px" }}>
+                    Joined At: {el.profile.joinedAt?.split("T")[0]}
+                  </p>
+                  <p style={{ marginBottom: "2px" }}>
+                    Your role: {el.profile.role}
+                  </p>
+                  <p style={{ marginBottom: "2px" }}>
+                    Course created at: {el.createdAt.split("T")[0]}
+                  </p>
+                  <i>Host by: {el.host.name}</i>
+                </Card>
+              </Col>
+            );
+          })}
+        </Flex>
+      )}
     </div>
   );
 

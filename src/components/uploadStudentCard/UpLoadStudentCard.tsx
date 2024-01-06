@@ -72,7 +72,7 @@ const UpLoadStudentCard = memo(
             fallback={fallBankImg}
           />
         ) : (
-          <div id="uploadStudentCardWrap">
+          <div id="uploadStudentCardWrap" style={{ width: "350px" }}>
             <p>Your Student Card:</p>
             <ImgCrop rotationSlider aspect={1.55}>
               <Upload
@@ -86,6 +86,7 @@ const UpLoadStudentCard = memo(
               </Upload>
             </ImgCrop>
             <Button
+              disabled={fileList.length == 0}
               type="primary"
               loading={uploading}
               onClick={() => bindingStudentCard()}

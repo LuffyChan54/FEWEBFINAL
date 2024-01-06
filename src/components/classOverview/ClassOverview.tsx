@@ -1,4 +1,5 @@
 import {
+  CheckCircleOutlined,
   CheckOutlined,
   CloseOutlined,
   CopyOutlined,
@@ -16,6 +17,7 @@ import {
   UploadProps,
   message,
 } from "antd";
+import { RcFile } from "antd/es/upload";
 import ChangeClassOV from "components/changeClassOV/ChangeClassOV";
 import { useCopyToClipboard } from "hooks";
 import { useEffect, useRef, useState } from "react";
@@ -27,9 +29,16 @@ import { Attendee, ClassInfoType } from "types";
 interface ClassOverviewProps {
   courseId: string | undefined;
   classDetail: ClassInfoType;
+  updateClassOverviewInfo: Function;
+  updateClassOverviewBackground: Function;
 }
 
-const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
+const ClassOverview = ({
+  courseId,
+  classDetail,
+  updateClassOverviewInfo,
+  updateClassOverviewBackground,
+}: ClassOverviewProps) => {
   const { courseId: currCourseId } = useParams();
 
   const { user } = useSelector(getAuthReducer);
@@ -37,8 +46,10 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
   const [messageApi, contextHolder] = message.useMessage();
   const [value, copy] = useCopyToClipboard();
   const [isStillLoading, setIsStillLoading] = useState(true);
-
+  const [temporaryBackground, setTemporaryBackground] = useState("");
   const isFinishLoadingFirstTime = useRef(0);
+  const bgFile = useRef(null);
+  const bgSRC = useRef("");
   if (classDetail.code != "Pending...") {
     isFinishLoadingFirstTime.current++;
     if (isFinishLoadingFirstTime.current == 1) {
@@ -140,6 +151,25 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
   //   },
   // };
 
+  const updateBackgroundCourse = async (info: any) => {
+    bgFile.current = info.file.originFileObj;
+    bgSRC.current = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(info.file.originFileObj as RcFile);
+      reader.onload = () => resolve(reader.result as string);
+    });
+    setTemporaryBackground(bgSRC.current);
+  };
+
+  const handleChangeBackground = () => {
+    updateClassOverviewBackground(bgFile.current, bgSRC.current);
+    setTemporaryBackground("");
+  };
+
+  const handleUnChangeBackground = () => {
+    setTemporaryBackground("");
+  };
+
   return (
     <>
       {isStillLoading ? (
@@ -149,19 +179,82 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
           {contextHolder}
           <div
             style={{
-              background: `url("https://th.bing.com/th/id/R.0d9b24189f42fb3f2563ef854b41ab0f?rik=QROqPZ61pRQ2IQ&pid=ImgRaw&r=0")`,
               height: "200px",
               width: "100%",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
               borderRadius: "5px",
               marginBottom: "20px",
+              overflow: "hidden",
               position: "relative",
-              padding: "10px",
             }}
-          ></div>
+          >
+            <img
+              src={
+                temporaryBackground == ""
+                  ? classDetail.background
+                  : temporaryBackground
+              }
+              style={{
+                height: "200px",
+                width: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: "10px",
+                left: "10px",
+              }}
+            >
+              {temporaryBackground == "" ? (
+                <Upload
+                  action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+                  onChange={(info) => updateBackgroundCourse(info)}
+                  showUploadList={false}
+                >
+                  <Button
+                    style={{
+                      background: "#22b472",
+                      color: "#fff",
+                      outline: "none",
+                      border: "none",
+                    }}
+                    icon={<UploadOutlined />}
+                  ></Button>
+                </Upload>
+              ) : (
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <Button
+                    style={{
+                      background: "#22b472",
+                      color: "#fff",
+                      outline: "none",
+                      border: "none",
+                    }}
+                    icon={<CheckOutlined />}
+                    onClick={handleChangeBackground}
+                  ></Button>
+
+                  <Button
+                    style={{
+                      background: "#ff7875",
+                      color: "#fff",
+                      outline: "none",
+                      border: "none",
+                    }}
+                    icon={<CloseOutlined />}
+                    onClick={handleUnChangeBackground}
+                  ></Button>
+                </div>
+              )}
+            </div>
+          </div>
           <Descriptions title="Class Info" items={items} />
-          <ChangeClassOV classDetails={classDetail} />
+          <ChangeClassOV
+            updateClassOverviewInfo={updateClassOverviewInfo}
+            classDetails={classDetail}
+          />
         </>
       )}
     </>

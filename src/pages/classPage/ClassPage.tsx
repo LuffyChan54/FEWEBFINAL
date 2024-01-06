@@ -9,10 +9,20 @@ import { setTabActive } from "@redux/reducer";
 import { Tabs, TabsProps, message } from "antd";
 import ClassOverview from "components/classOverview/ClassOverview";
 import ClassPeople from "components/classPeople/ClassPeople";
+import { addClassOptions } from "helpers";
+import {
+  updateClassBackground,
+  updateClassOptions,
+} from "helpers/class/classOVMutation";
 import { memo, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
-import { ClassEndpointWTID, getClassDetail } from "services/classService";
+import {
+  ClassEndpointWTID,
+  getClassDetail,
+  updateBackground,
+  updateCourseInfo,
+} from "services/classService";
 import useSWR from "swr";
 import { ClassInfoType } from "types";
 
@@ -46,12 +56,60 @@ const ClassPage = memo(() => {
       name: "Pending...",
       desc: "Pending...",
       code: "Pending...",
-      background: null,
+      background: "",
       createdAt: "Pending...",
       attendees: [],
       host: null,
     };
   }
+
+  const updateClassOverviewInfo = async (newClassOV: any) => {
+    try {
+      await mutate(
+        updateCourseInfo(courseId, newClassOV, classDetail),
+        updateClassOptions(newClassOV, classDetail)
+      );
+
+      messageApi.open({
+        key: "updatingCourse",
+        type: "success",
+        content: "Success! Update course info 🎉.",
+        duration: 2,
+      });
+    } catch (err) {
+      messageApi.open({
+        key: "updatingCourse",
+        type: "error",
+        content: "Failed to update course info.",
+        duration: 2,
+      });
+    }
+  };
+
+  const updateClassOverviewBackground = async (bgFile: any, bgFileSRC: any) => {
+    try {
+      const bodyFormData = new FormData();
+      bodyFormData.append("file", bgFile);
+      await mutate(
+        updateBackground(courseId, bodyFormData, classDetail),
+        updateClassBackground(bgFileSRC, classDetail)
+      );
+
+      messageApi.open({
+        key: "updatingBackground",
+        type: "success",
+        content: "Success! Update background 🎉.",
+        duration: 2,
+      });
+    } catch (err) {
+      messageApi.open({
+        key: "updatingBackground",
+        type: "error",
+        content: "Failed to update background.",
+        duration: 2,
+      });
+    }
+  };
 
   //TODO: IPLM OVERVIEW COMPONENT AND PEOPLE COMPONENT;
 
@@ -67,6 +125,8 @@ const ClassPage = memo(() => {
         <ClassOverview
           classDetail={classDetail as ClassInfoType}
           courseId={courseId}
+          updateClassOverviewInfo={updateClassOverviewInfo}
+          updateClassOverviewBackground={updateClassOverviewBackground}
         />
       ),
     },

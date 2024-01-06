@@ -2,7 +2,13 @@ import React, { useState } from "react";
 import { Button, Form, Input, Modal } from "antd";
 import { ClassInfoType } from "types";
 
-const ChangeClassOV = ({ classDetails }: { classDetails: ClassInfoType }) => {
+const ChangeClassOV = ({
+  classDetails,
+  updateClassOverviewInfo,
+}: {
+  classDetails: ClassInfoType;
+  updateClassOverviewInfo: any;
+}) => {
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
@@ -16,6 +22,10 @@ const ChangeClassOV = ({ classDetails }: { classDetails: ClassInfoType }) => {
     setOpen(false);
   };
 
+  const handleUpdateCourse = (values: any) => {
+    updateClassOverviewInfo(values);
+    setOpen(false);
+  };
   return (
     <>
       <Button type="primary" onClick={showModal}>
@@ -34,7 +44,7 @@ const ChangeClassOV = ({ classDetails }: { classDetails: ClassInfoType }) => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 400 }}
           initialValues={{ name: classDetails.name, desc: classDetails.desc }}
-          onFinish={() => {}}
+          onFinish={handleUpdateCourse}
           onFinishFailed={() => {}}
           autoComplete="off"
         >
