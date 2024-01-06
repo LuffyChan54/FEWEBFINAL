@@ -1,19 +1,47 @@
-import { getAuthReducer } from "@redux/reducer";
+import { getAuthReducer, setFullUser, setStudentInfo } from "@redux/reducer";
 import { Descriptions, DescriptionsProps, Flex } from "antd";
 import UpLoadStudentCard from "components/uploadStudentCard/UpLoadStudentCard";
 import UserDetails from "components/userDetails/UserDetails";
-import { useSelector } from "react-redux";
+import { memo, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getUser } from "services/userService";
+import { getStudentInfoCard } from "services/studentInfoService";
+const UserInfo = memo(() => {
+  const dispatch = useDispatch();
+  const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(true);
+  const [isFetchingStudentInfo, setIsFetchingStudentInfo] = useState(true);
+  useEffect(() => {
+    getUser()
+      .then((res: any) => {
+        dispatch(setFullUser(res));
+      })
+      .catch((err: any) => {
+        console.log("UserInfo: Fail load user full info ", err);
+      })
+      .finally(() => setIsFetchingUserInfo(false));
 
-const UserInfo = () => {
+    getStudentInfoCard()
+      .then((res) => {
+        dispatch(setStudentInfo(res));
+      })
+      .catch((err) => {
+        console.log("UserInfo: Fail load student card info ", err);
+      })
+      .finally(() => setIsFetchingStudentInfo(false));
+    return;
+  }, []);
   return (
     <div>
       <h6>User Info: </h6>
       <Flex gap={"20px"}>
-        <UpLoadStudentCard />
-        <UserDetails />
+        <UpLoadStudentCard isFetchingStudentInfo={isFetchingStudentInfo} />
+        <UserDetails
+          isFetchingUserInfo={isFetchingUserInfo}
+          isFetchingStudentInfo={isFetchingStudentInfo}
+        />
       </Flex>
     </div>
   );
-};
+});
 
 export default UserInfo;
