@@ -22,7 +22,6 @@ const UpLoadStudentCard = memo(
     const bindingStudentCard = () => {
       setUploading(true);
       const bodyFormData = new FormData();
-      console.log("ORIGINAL FILE: ", fileList[0].originFileObj);
       bodyFormData.append("file", fileList[0].originFileObj as any);
       bindingImage(bodyFormData)
         .then((res) => {
@@ -73,7 +72,7 @@ const UpLoadStudentCard = memo(
             fallback={fallBankImg}
           />
         ) : (
-          <div>
+          <div id="uploadStudentCardWrap">
             <p>Your Student Card:</p>
             <ImgCrop rotationSlider aspect={1.55}>
               <Upload

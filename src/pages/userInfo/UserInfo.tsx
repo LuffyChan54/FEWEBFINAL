@@ -6,6 +6,7 @@ import { memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUser } from "services/userService";
 import { getStudentInfoCard } from "services/studentInfoService";
+import UploadAvatar from "components/uploadAvatar/UploadAvatar";
 const UserInfo = memo(() => {
   const dispatch = useDispatch();
   const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(true);
@@ -39,6 +40,7 @@ const UserInfo = memo(() => {
           isFetchingUserInfo={isFetchingUserInfo}
           isFetchingStudentInfo={isFetchingStudentInfo}
         />
+        <UploadAvatar />
       </Flex>
     </div>
   );
