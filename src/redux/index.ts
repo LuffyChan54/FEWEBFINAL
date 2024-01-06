@@ -4,6 +4,7 @@ import {
   classOVReducer,
   classReducer,
   sidebarReducer,
+  userFullReducer,
 } from "./reducer";
 
 export const store = configureStore({
@@ -12,5 +13,6 @@ export const store = configureStore({
     classOV: classOVReducer,
     class: classReducer,
     sidebar: sidebarReducer,
+    userfull: userFullReducer,
   },
 });

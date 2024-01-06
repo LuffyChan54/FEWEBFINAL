@@ -142,8 +142,8 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
 
   return (
     <>
-      {/* {isStillLoading ? (
-        <Skeleton />
+      {isStillLoading ? (
+        <Skeleton active />
       ) : (
         <>
           {contextHolder}
@@ -156,28 +156,14 @@ const ClassOverview = ({ courseId, classDetail }: ClassOverviewProps) => {
               backgroundRepeat: "no-repeat",
               borderRadius: "5px",
               marginBottom: "20px",
+              position: "relative",
+              padding: "10px",
             }}
           ></div>
           <Descriptions title="Class Info" items={items} />
+          <ChangeClassOV classDetails={classDetail} />
         </>
-      )} */}
-
-      {contextHolder}
-      <div
-        style={{
-          background: `url("https://th.bing.com/th/id/R.0d9b24189f42fb3f2563ef854b41ab0f?rik=QROqPZ61pRQ2IQ&pid=ImgRaw&r=0")`,
-          height: "200px",
-          width: "100%",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          borderRadius: "5px",
-          marginBottom: "20px",
-          position: "relative",
-          padding: "10px",
-        }}
-      ></div>
-      <Descriptions title="Class Info" items={items} />
-      <ChangeClassOV classDetails={classDetail} />
+      )}
     </>
   );
 };
