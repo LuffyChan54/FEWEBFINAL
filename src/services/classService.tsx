@@ -66,3 +66,22 @@ export const removeAttendee = async (classID: any, attendeeID: any) => {
   );
   return res.data;
 };
+
+export const downloadTemplate = async (classID: any) => {
+  const res = await classClient.get(
+    ClassEndpointWTID + classID + "/import/template"
+  );
+  const buff = new Uint8Array(res.data.buffer.data).buffer;
+  const fileURL = URL.createObjectURL(
+    new Blob([buff], {
+      type: "vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    })
+  );
+  const link = document.createElement("a");
+  link.href = fileURL;
+  link.setAttribute("download", "student-import.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  return;
+};

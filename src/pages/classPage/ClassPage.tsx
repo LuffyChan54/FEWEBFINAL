@@ -20,6 +20,7 @@ import {
   updateClassBackground,
   updateClassOptions,
 } from "helpers/class/classOVMutation";
+import { changeRoleMutation } from "helpers/remoteOptions/ChangeRoleOptions.";
 import { memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { redirect, useNavigate, useParams } from "react-router-dom";
@@ -51,7 +52,6 @@ const ClassPage = memo(() => {
     mutate,
   } = useSWR(ClassEndpointWTID + courseId, () => getClassDetail(courseId), {
     onSuccess: (data) => {
-      console.log("loading");
       setIsReloading(false);
       return data;
     },
@@ -97,6 +97,10 @@ const ClassPage = memo(() => {
     if (classDetail.host.userId == user.userId) {
       if (yourRole != "ADMIN") {
         setYourRole("ADMIN");
+      }
+    } else {
+      if (yourRole != "USER") {
+        setYourRole("USER");
       }
     }
   }
@@ -149,6 +153,10 @@ const ClassPage = memo(() => {
     }
   };
 
+  const updateRoleAttendeeDirectly = (values: any) => {
+    mutate(changeRoleMutation(classDetail, values));
+  };
+
   //TODO: IPLM OVERVIEW COMPONENT AND PEOPLE COMPONENT;
 
   const items: TabsProps["items"] = [
@@ -181,6 +189,7 @@ const ClassPage = memo(() => {
           classDetail={classDetail as ClassInfoType}
           courseId={courseId}
           yourRole={yourRole}
+          updateRoleAttendeeDirectly={updateRoleAttendeeDirectly}
         />
       ),
     },

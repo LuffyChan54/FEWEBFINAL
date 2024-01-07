@@ -1,3 +1,8 @@
+import {
+  DownloadOutlined,
+  ExportOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
 import { getAuthReducer } from "@redux/reducer";
 import {
   Button,
@@ -14,21 +19,26 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { getAuth } from "firebase/auth";
+import { changeRoleMutation } from "helpers/remoteOptions/ChangeRoleOptions.";
 import { useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { ClassOVEndpoint } from "services/classOVService";
 import {
   ClassEndpointWTID,
   changeRole,
+  downloadTemplate,
   getClassDetail,
 } from "services/classService";
 import { sendInvitationEmail } from "services/inviteService";
-import { preload } from "swr";
+import { preload, useSWRConfig } from "swr";
 import { Attendee, ClassInfoType } from "types";
-
+import fs from "fs";
+import * as xlsx from "xlsx";
 interface ClassPeopleProps {
   courseId: string | undefined;
   classDetail: ClassInfoType;
   yourRole: String;
+  updateRoleAttendeeDirectly: Function;
 }
 
 interface dataTableType
@@ -36,9 +46,15 @@ interface dataTableType
   key: any;
 }
 
-const ClassPeople = ({ courseId, classDetail, yourRole }: ClassPeopleProps) => {
+const ClassPeople = ({
+  courseId,
+  classDetail,
+  yourRole,
+  updateRoleAttendeeDirectly,
+}: ClassPeopleProps) => {
   // preload(ClassEndpointWTID + courseId, () => getClassDetail(courseId));
 
+  const { mutate } = useSWRConfig();
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const stateFormInvateRef = useRef("");
@@ -48,6 +64,7 @@ const ClassPeople = ({ courseId, classDetail, yourRole }: ClassPeopleProps) => {
   const [initChangeRoleValues, setInitChangeRoleValues] = useState({});
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const { Option } = Select;
+  const [isDownloading, setIsDownloading] = useState(false);
   let currentRole = yourRole;
   const { user } = useSelector(getAuthReducer);
 
@@ -232,21 +249,40 @@ const ClassPeople = ({ courseId, classDetail, yourRole }: ClassPeopleProps) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
+  const handleDownloadTemplate = () => {
+    setIsDownloading(true);
+    downloadTemplate(courseId)
+      .then(() => {
+        messageApi.success("Successfully downloaded");
+      })
+      .catch((err) => {
+        console.log("ClassPeople: Failed to download", err);
+        messageApi.error("Failed to download");
+      })
+      .finally(() => {
+        setIsDownloading(false);
+      });
+  };
   const TabPeople: TabsProps["items"] = [
     {
       label: "Teachers",
       key: "Teachers",
       children: (
         <>
-          <Button
-            type="primary"
-            onClick={() => {
-              stateFormInvateRef.current = "teacher";
-              showModal();
-            }}
-          >
-            Invite New Teacher
-          </Button>
+          {currentRole == "HOST" && (
+            <Button
+              icon={<UserAddOutlined />}
+              style={{ marginBottom: "10px" }}
+              type="primary"
+              onClick={() => {
+                stateFormInvateRef.current = "teacher";
+                showModal();
+              }}
+            >
+              Invite New Teacher
+            </Button>
+          )}
           <Table
             key="tableteacher"
             columns={columns}
@@ -263,6 +299,10 @@ const ClassPeople = ({ courseId, classDetail, yourRole }: ClassPeopleProps) => {
       children: (
         <>
           <Button
+            icon={<UserAddOutlined />}
+            style={{
+              marginBottom: "10px",
+            }}
             type="primary"
             onClick={() => {
               stateFormInvateRef.current = "student";
@@ -271,6 +311,37 @@ const ClassPeople = ({ courseId, classDetail, yourRole }: ClassPeopleProps) => {
           >
             Invite New Student
           </Button>
+
+          <Table
+            key="tablestudent"
+            columns={columns}
+            dataSource={Students}
+            virtual
+            scroll={{ x: 1000, y: 1000 }}
+          />
+        </>
+      ),
+    },
+    {
+      label: "Students In Course",
+      key: "StudentsInCourse",
+      children: (
+        <>
+          {currentRole == "HOST" && (
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <Button icon={<ExportOutlined />} type="primary">
+                Import file xlsx
+              </Button>
+              <Button
+                loading={isDownloading}
+                icon={<DownloadOutlined />}
+                style={{ outline: "none" }}
+                onClick={() => handleDownloadTemplate()}
+              >
+                Download template
+              </Button>
+            </div>
+          )}
 
           <Table
             key="tablestudent"
@@ -292,6 +363,7 @@ const ClassPeople = ({ courseId, classDetail, yourRole }: ClassPeopleProps) => {
     changeRole(courseId, values)
       .then((res) => {
         messageApi.success("Update role successfully");
+        updateRoleAttendeeDirectly(values);
         setIsChangeRoleOpen(false);
       })
       .catch((err) => {
