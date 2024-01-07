@@ -180,6 +180,7 @@ const ClassPage = memo(() => {
         <ClassPeople
           classDetail={classDetail as ClassInfoType}
           courseId={courseId}
+          yourRole={yourRole}
         />
       ),
     },

@@ -1,7 +1,10 @@
+import { getAuthReducer } from "@redux/reducer";
 import {
   Button,
+  Form,
   Input,
   Modal,
+  Select,
   Space,
   Table,
   Tabs,
@@ -10,8 +13,14 @@ import {
   message,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
+import { getAuth } from "firebase/auth";
 import { useRef, useState } from "react";
-import { ClassEndpointWTID, getClassDetail } from "services/classService";
+import { useSelector } from "react-redux";
+import {
+  ClassEndpointWTID,
+  changeRole,
+  getClassDetail,
+} from "services/classService";
 import { sendInvitationEmail } from "services/inviteService";
 import { preload } from "swr";
 import { Attendee, ClassInfoType } from "types";
@@ -19,6 +28,7 @@ import { Attendee, ClassInfoType } from "types";
 interface ClassPeopleProps {
   courseId: string | undefined;
   classDetail: ClassInfoType;
+  yourRole: String;
 }
 
 interface dataTableType
@@ -26,45 +36,114 @@ interface dataTableType
   key: any;
 }
 
-const columns: ColumnsType<dataTableType> = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
-  },
-  {
-    title: "Email",
-    dataIndex: "email",
-    key: "email",
-  },
-  {
-    title: "Role",
-    dataIndex: "role",
-    key: "role",
-  },
-  {
-    title: "Joined At",
-    dataIndex: "joinedAt",
-    key: "joinedAt",
-  },
-  {
-    title: "Action",
-    key: "action",
-    render: (_) => (
-      <Space size="middle">
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
-
-const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
+const ClassPeople = ({ courseId, classDetail, yourRole }: ClassPeopleProps) => {
   // preload(ClassEndpointWTID + courseId, () => getClassDetail(courseId));
 
+  const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const stateFormInvateRef = useRef("");
   const inputAntdRef: any = useRef(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const [isChangeRoleOpen, setIsChangeRoleOpen] = useState(false);
+  const [initChangeRoleValues, setInitChangeRoleValues] = useState({});
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+  const { Option } = Select;
+  let currentRole = yourRole;
+  const { user } = useSelector(getAuthReducer);
+
+  if (classDetail.host != null) {
+    if (user.userId == classDetail.host.userId) {
+      currentRole = "HOST";
+    } else {
+      classDetail.attendees.forEach((attendee) => {
+        if (attendee.userId == user.userId) {
+          currentRole = attendee.role;
+        }
+      });
+    }
+  }
+
+  const columns: ColumnsType<dataTableType> = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Role",
+      dataIndex: "role",
+      key: "role",
+    },
+    {
+      title: "Joined At",
+      dataIndex: "joinedAt",
+      key: "joinedAt",
+    },
+  ];
+
+  if (currentRole != "STUDENT") {
+    const actionObj = {
+      title: "Action",
+      key: "action",
+      render: (value: any) => {
+        if (currentRole == "HOST") {
+          return (
+            <Space size="middle">
+              {value.role != "HOST" && (
+                <>
+                  <Button onClick={() => handleChangeRole(value)}>
+                    Change role
+                  </Button>
+                  <Button danger onClick={() => handleRemove(value)}>
+                    Remove
+                  </Button>
+                </>
+              )}
+            </Space>
+          );
+        }
+
+        if (currentRole == "TEACHER") {
+          return (
+            <Space size="middle">
+              {value.role == "STUDENT" && (
+                <>
+                  {/* <Button onClick={() => handleChangeRole(value)}>
+                    Change role
+                  </Button> */}
+                  <Button danger onClick={() => handleRemove(value)}>
+                    Remove
+                  </Button>
+                </>
+              )}
+            </Space>
+          );
+        }
+      },
+    };
+    columns.push(actionObj);
+  }
+
+  const handleChangeRole = (value: any) => {
+    form.setFieldsValue({
+      name: value.name,
+      attendeeId: value.key,
+      role: value.role,
+    });
+    setInitChangeRoleValues({
+      name: value.name,
+      attendeeId: value.key,
+      role: value.role,
+    });
+    setIsChangeRoleOpen(true);
+  };
+  const handleRemove = (value: any) => {};
+
   let Teachers: dataTableType[] = [];
   let Students: dataTableType[] = [];
   classDetail.attendees.forEach((el) => {
@@ -169,6 +248,7 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
             Invite New Teacher
           </Button>
           <Table
+            key="tableteacher"
             columns={columns}
             dataSource={Teachers}
             virtual
@@ -193,6 +273,7 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
           </Button>
 
           <Table
+            key="tablestudent"
             columns={columns}
             dataSource={Students}
             virtual
@@ -203,6 +284,24 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
     },
   ];
 
+  const handleCancelChangeRole = () => {
+    setIsChangeRoleOpen(false);
+  };
+  const handleChangeRoleFinish = (values: any) => {
+    setIsUpdatingRole(true);
+    changeRole(courseId, values)
+      .then((res) => {
+        messageApi.success("Update role successfully");
+        setIsChangeRoleOpen(false);
+      })
+      .catch((err) => {
+        console.log("ClassPeople: Failed to update role", err);
+        messageApi.error("Failed to update role");
+      })
+      .finally(() => {
+        setIsUpdatingRole(false);
+      });
+  };
   return (
     <>
       {contextHolder}
@@ -222,6 +321,51 @@ const ClassPeople = ({ courseId, classDetail }: ClassPeopleProps) => {
         items={TabPeople}
         onTabClick={(v) => (typeInviteRef.current = v)}
       />
+
+      <Modal
+        title="Change Role"
+        open={isChangeRoleOpen}
+        onCancel={handleCancelChangeRole}
+        footer={null}
+      >
+        <Form
+          name="basic"
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
+          style={{ maxWidth: 400 }}
+          initialValues={initChangeRoleValues}
+          onFinish={handleChangeRoleFinish}
+          onFinishFailed={() => {}}
+          autoComplete="off"
+          form={form}
+        >
+          <Form.Item label="Attendee Name" name="name">
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item hidden label="Descriptions" name="attendeeId">
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item name="role" label="Role" rules={[{ required: true }]}>
+            <Select placeholder="Attendee role">
+              {currentRole == "HOST" && (
+                <>
+                  <Option value="HOST">HOST</Option>
+                  <Option value="TEACHER">TEACHER</Option>
+                  <Option value="STUDENT">STUDENT</Option>
+                </>
+              )}
+            </Select>
+          </Form.Item>
+
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            <Button loading={isUpdatingRole} type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 };

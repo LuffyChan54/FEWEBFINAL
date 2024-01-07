@@ -51,3 +51,18 @@ export const deleteClass = async (classID: any) => {
   const res = await classClient.delete(ClassEndpointWTID + classID);
   return res.data;
 };
+
+export const changeRole = async (classID: any, updateInfo: any) => {
+  const res = await classClient.put(
+    ClassEndpointWTID + classID + "/attendee/role",
+    updateInfo
+  );
+  return res.data;
+};
+
+export const removeAttendee = async (classID: any, attendeeID: any) => {
+  const res = await classClient.delete(
+    ClassEndpointWTID + classID + "/attendee/" + attendeeID
+  );
+  return res.data;
+};
