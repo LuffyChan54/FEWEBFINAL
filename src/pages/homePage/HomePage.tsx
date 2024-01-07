@@ -1,4 +1,12 @@
-import { getAuthReducer, setClassOverview, update } from "@redux/reducer";
+import {
+  getAlertHome,
+  getAuthReducer,
+  getFlags,
+  setAlert,
+  setClassOverview,
+  setFlags,
+  update,
+} from "@redux/reducer";
 import { Button, Card, Col, Flex, Input, Modal, Skeleton, message } from "antd";
 import GlobalLayout from "layouts/globalLayout/GlobalLayout";
 import { memo, useEffect, useRef, useState } from "react";
@@ -13,7 +21,7 @@ import {
   createClassOV,
   joinClassOV,
 } from "services/classOVService";
-import { addClassOptions } from "helpers";
+import { addClassOptions, removeClassOptions } from "helpers";
 
 interface VirtualInputRefType {
   input: {
@@ -38,10 +46,9 @@ const HomePage = memo(() => {
   const inputClassCodeRef = useRef(null);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-
+  const alertValue = useSelector(getAlertHome);
   //checking
   const { token, user } = useSelector(getAuthReducer);
-
   let {
     isLoading,
     isValidating,
@@ -111,6 +118,24 @@ const HomePage = memo(() => {
       }
     }
   });
+
+  useEffect(() => {
+    if (alertValue.value) {
+      if (alertValue.type == "info") {
+        messageApi.info(alertValue.value);
+      }
+
+      if (alertValue.type == "success") {
+        messageApi.success(alertValue.value);
+      }
+
+      if (alertValue.type == "error") {
+        messageApi.error(alertValue.value);
+      }
+
+      dispatch(setAlert({}));
+    }
+  }, [alertValue.value]);
 
   const addClassOVMutation = async (newClassOV: any) => {
     messageApi.open({

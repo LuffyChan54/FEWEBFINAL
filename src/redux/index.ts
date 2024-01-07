@@ -6,6 +6,8 @@ import {
   sidebarReducer,
   userFullReducer,
   studentInfoReducer,
+  flagsForSWRReducer,
+  alertHomeReducer,
 } from "./reducer";
 
 export const store = configureStore({
@@ -16,5 +18,7 @@ export const store = configureStore({
     sidebar: sidebarReducer,
     userfull: userFullReducer,
     studentInfo: studentInfoReducer,
+    flags: flagsForSWRReducer,
+    alerthome: alertHomeReducer,
   },
 });

@@ -5,25 +5,33 @@ import {
   ReloadOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
-import { setTabActive } from "@redux/reducer";
+import {
+  getAuthReducer,
+  getClassOVReducer,
+  removeClassOV,
+  setAlert,
+  setTabActive,
+} from "@redux/reducer";
 import { Tabs, TabsProps, message } from "antd";
 import ClassOverview from "components/classOverview/ClassOverview";
 import ClassPeople from "components/classPeople/ClassPeople";
-import { addClassOptions } from "helpers";
+import { addClassOptions, removeClassOptions } from "helpers";
 import {
   updateClassBackground,
   updateClassOptions,
 } from "helpers/class/classOVMutation";
 import { memo, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { redirect, useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { ClassOVEndpoint } from "services/classOVService";
 import {
   ClassEndpointWTID,
   getClassDetail,
   updateBackground,
   updateCourseInfo,
 } from "services/classService";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { ClassInfoType } from "types";
 
 const ClassPage = memo(() => {
@@ -31,6 +39,10 @@ const ClassPage = memo(() => {
   const dispatch = useDispatch();
   const [isReloading, setIsReloading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [yourRole, setYourRole] = useState("USER");
+  const classOVS = useSelector(getClassOVReducer);
+  const { mutate: myMutate } = useSWRConfig();
+  const navigate = useNavigate();
   let {
     isLoading,
     isValidating,
@@ -43,12 +55,32 @@ const ClassPage = memo(() => {
       setIsReloading(false);
       return data;
     },
+    onError: (data) => {
+      if (data.response.data.message == "not found course") {
+        dispatch(removeClassOV({ id: courseId }));
+        myMutate(
+          ClassOVEndpoint,
+          removeClassOptions(courseId, classOVS).optimisticData,
+          false
+        );
+        dispatch(setTabActive("home"));
+        navigate("/home");
+        dispatch(
+          setAlert({
+            type: "info",
+            value: "This class has not been found!",
+          })
+        );
+      }
+    },
   });
 
   useEffect(() => {
     dispatch(setTabActive(courseId));
     return;
   });
+
+  const { user } = useSelector(getAuthReducer);
 
   if (classDetail == undefined) {
     classDetail = {
@@ -61,6 +93,12 @@ const ClassPage = memo(() => {
       attendees: [],
       host: null,
     };
+  } else {
+    if (classDetail.host.userId == user.userId) {
+      if (yourRole != "ADMIN") {
+        setYourRole("ADMIN");
+      }
+    }
   }
 
   const updateClassOverviewInfo = async (newClassOV: any) => {
@@ -127,6 +165,7 @@ const ClassPage = memo(() => {
           courseId={courseId}
           updateClassOverviewInfo={updateClassOverviewInfo}
           updateClassOverviewBackground={updateClassOverviewBackground}
+          yourRole={yourRole}
         />
       ),
     },

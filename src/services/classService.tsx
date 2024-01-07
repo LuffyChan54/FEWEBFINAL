@@ -39,3 +39,15 @@ export const updateBackground = async (
   const newInfo = res.data;
   return { ...currentData, background: newInfo.background };
 };
+
+export const leaveClass = async (classID: any, studentID: any) => {
+  const res = await classClient.delete(
+    ClassEndpointWTID + classID + "/attendee/leave"
+  );
+  return res.data;
+};
+
+export const deleteClass = async (classID: any) => {
+  const res = await classClient.delete(ClassEndpointWTID + classID);
+  return res.data;
+};

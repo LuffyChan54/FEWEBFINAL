@@ -3,15 +3,25 @@ import {
   CheckOutlined,
   CloseOutlined,
   CopyOutlined,
+  ExclamationCircleOutlined,
+  LogoutOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import { getAuthReducer } from "@redux/reducer";
+import {
+  getAuthReducer,
+  getClassOVReducer,
+  removeClassOV,
+  setAlert,
+  setFlags,
+  setTabActive,
+} from "@redux/reducer";
 import {
   Button,
   Descriptions,
   DescriptionsProps,
   Flex,
   Layout,
+  Modal,
   Skeleton,
   Upload,
   UploadProps,
@@ -19,18 +29,26 @@ import {
 } from "antd";
 import { RcFile } from "antd/es/upload";
 import ChangeClassOV from "components/changeClassOV/ChangeClassOV";
+import { removeClassOptions } from "helpers";
 import { useCopyToClipboard } from "hooks";
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { ClassEndpointWTID, getClassDetail } from "services/classService";
-import { preload } from "swr";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { ClassOVEndpoint } from "services/classOVService";
+import {
+  ClassEndpointWTID,
+  deleteClass,
+  getClassDetail,
+  leaveClass,
+} from "services/classService";
+import { useSWRConfig } from "swr";
 import { Attendee, ClassInfoType } from "types";
 interface ClassOverviewProps {
   courseId: string | undefined;
   classDetail: ClassInfoType;
   updateClassOverviewInfo: Function;
   updateClassOverviewBackground: Function;
+  yourRole: String;
 }
 
 const ClassOverview = ({
@@ -38,11 +56,14 @@ const ClassOverview = ({
   classDetail,
   updateClassOverviewInfo,
   updateClassOverviewBackground,
+  yourRole,
 }: ClassOverviewProps) => {
   const { courseId: currCourseId } = useParams();
-
+  const classOVS = useSelector(getClassOVReducer);
+  const navigate = useNavigate();
   const { user } = useSelector(getAuthReducer);
-
+  const [openLeaveCourse, setOpenLeaveCourse] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [value, copy] = useCopyToClipboard();
   const [isStillLoading, setIsStillLoading] = useState(true);
@@ -50,6 +71,8 @@ const ClassOverview = ({
   const isFinishLoadingFirstTime = useRef(0);
   const bgFile = useRef(null);
   const bgSRC = useRef("");
+  const dispatch = useDispatch();
+  const { mutate } = useSWRConfig();
   if (classDetail.code != "Pending...") {
     isFinishLoadingFirstTime.current++;
     if (isFinishLoadingFirstTime.current == 1) {
@@ -77,6 +100,72 @@ const ClassOverview = ({
     }
 
     return result;
+  };
+
+  const handleCancelLeave = () => {
+    setOpenLeaveCourse(false);
+  };
+
+  const handleOKLeave = () => {
+    setConfirmLoading(true);
+
+    if (yourRole == "USER") {
+      leaveClass(courseId, user.userId)
+        .then((res) => {
+          //TODO:
+          dispatch(removeClassOV({ id: courseId }));
+
+          mutate(
+            ClassOVEndpoint,
+            removeClassOptions(courseId, classOVS).optimisticData,
+            false
+          );
+          dispatch(
+            setAlert({
+              type: "success",
+              value: "Leave course successfully",
+            })
+          );
+          setOpenLeaveCourse(false);
+          navigate("/home");
+          dispatch(setTabActive("home"));
+        })
+        .catch((err) => {
+          messageApi.error("Error while leaving the course!");
+          console.log("ClassOverview: Fail to leave the course", err);
+        })
+        .finally(() => {
+          setConfirmLoading(false);
+        });
+    }
+    if (yourRole == "ADMIN") {
+      deleteClass(courseId)
+        .then((res) => {
+          //TODO:
+          dispatch(removeClassOV({ id: courseId }));
+          mutate(
+            ClassOVEndpoint,
+            removeClassOptions(courseId, classOVS).optimisticData,
+            false
+          );
+          dispatch(
+            setAlert({
+              type: "success",
+              value: "Delete course successfully",
+            })
+          );
+          setOpenLeaveCourse(false);
+          navigate("/home");
+          dispatch(setTabActive("home"));
+        })
+        .catch((err) => {
+          messageApi.error("Error while deleting the course!");
+          console.log("ClassOverview: Fail to delete the course", err);
+        })
+        .finally(() => {
+          setConfirmLoading(false);
+        });
+    }
   };
 
   let myProfile = undefined;
@@ -200,63 +289,94 @@ const ClassOverview = ({
                 objectPosition: "center",
               }}
             />
-            <div
-              style={{
-                position: "absolute",
-                top: "10px",
-                left: "10px",
-              }}
-            >
-              {temporaryBackground == "" ? (
-                <Upload
-                  action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-                  onChange={(info) => updateBackgroundCourse(info)}
-                  showUploadList={false}
-                >
-                  <Button
-                    style={{
-                      background: "#22b472",
-                      color: "#fff",
-                      outline: "none",
-                      border: "none",
-                    }}
-                    icon={<UploadOutlined />}
-                  ></Button>
-                </Upload>
-              ) : (
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <Button
-                    style={{
-                      background: "#22b472",
-                      color: "#fff",
-                      outline: "none",
-                      border: "none",
-                    }}
-                    icon={<CheckOutlined />}
-                    onClick={handleChangeBackground}
-                  ></Button>
 
-                  <Button
-                    style={{
-                      background: "#ff7875",
-                      color: "#fff",
-                      outline: "none",
-                      border: "none",
-                    }}
-                    icon={<CloseOutlined />}
-                    onClick={handleUnChangeBackground}
-                  ></Button>
-                </div>
-              )}
-            </div>
+            {yourRole == "ADMIN" && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  left: "10px",
+                }}
+              >
+                {temporaryBackground == "" ? (
+                  <Upload
+                    action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+                    onChange={(info) => updateBackgroundCourse(info)}
+                    showUploadList={false}
+                  >
+                    <Button
+                      style={{
+                        background: "#22b472",
+                        color: "#fff",
+                        outline: "none",
+                        border: "none",
+                      }}
+                      icon={<UploadOutlined />}
+                    ></Button>
+                  </Upload>
+                ) : (
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <Button
+                      style={{
+                        background: "#22b472",
+                        color: "#fff",
+                        outline: "none",
+                        border: "none",
+                      }}
+                      icon={<CheckOutlined />}
+                      onClick={handleChangeBackground}
+                    ></Button>
+
+                    <Button
+                      style={{
+                        background: "#ff7875",
+                        color: "#fff",
+                        outline: "none",
+                        border: "none",
+                      }}
+                      icon={<CloseOutlined />}
+                      onClick={handleUnChangeBackground}
+                    ></Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <Descriptions title="Class Info" items={items} />
-          <ChangeClassOV
-            updateClassOverviewInfo={updateClassOverviewInfo}
-            classDetails={classDetail}
-          />
+          {yourRole == "ADMIN" && (
+            <ChangeClassOV
+              updateClassOverviewInfo={updateClassOverviewInfo}
+              classDetails={classDetail}
+            />
+          )}
+          <Button
+            type="primary"
+            danger
+            style={{ display: "block", marginTop: "10px" }}
+            icon={<LogoutOutlined />}
+            onClick={() => setOpenLeaveCourse(true)}
+          >
+            {yourRole == "ADMIN" ? "Delete course" : "Leave course"}
+          </Button>
         </>
       )}
+
+      <Modal
+        title={
+          <>
+            {" "}
+            <ExclamationCircleOutlined style={{ color: "#ffc069" }} />{" "}
+            {yourRole == "ADMIN" ? "Delete course" : "Leave course"}
+          </>
+        }
+        open={openLeaveCourse}
+        onOk={handleOKLeave}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancelLeave}
+        okButtonProps={{ danger: true }}
+      >
+        <p>Do you want to {yourRole == "ADMIN" ? "delete" : "leave"} course?</p>
+      </Modal>
     </>
   );
 };
