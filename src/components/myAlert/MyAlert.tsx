@@ -1,11 +1,11 @@
 import { Tag } from "antd";
 // @ts-ignore
 import NoticeIcon from "components/NoticeIcon/index.jsx";
-import { onMessage } from "firebase/messaging";
 import { messaging, onMessageListener, requestForToken } from "lib/firebase";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getNotifications, upsertUserToken } from "services/notificationService";
+import { NotificationTemplate } from "types/notification";
 const data = [
   {
     id: "000000001",
@@ -126,20 +126,20 @@ const data = [
 type NoticeStatus = "todo" | "processing" | "urgent" | "doing";
 interface Notice {
   status: NoticeStatus;
-  id: string;
-  key: any;
+  id?: string;
+  key?: any;
   content: string;
-  extra: any;
+  extra?: any;
   title: string;
   avatar?: string;
   // Add other properties as needed
 }
 
-function getNoticeData(notices: any) {
+function getNoticeData(notices: NotificationTemplate[]) {
   if (notices.length === 0) {
     return {};
   }
-  const newNotices = notices.map((notice: any) => {
+  const newNotices = notices.map((notice: NotificationTemplate) => {
     const newNotice: Notice = { ...notice };
     // transform id to item key
     if (newNotice.id) {
@@ -157,8 +157,6 @@ function getNoticeData(notices: any) {
           {newNotice.content}
         </Tag>
       );
-      newNotice.title = notice.name;
-      newNotice.avatar = notice.avatar;
     }
     return newNotice;
   });
@@ -176,7 +174,7 @@ function getNoticeData(notices: any) {
 // const noticeData = getNoticeData(data);
 const MyAlert = () => {
   const [_, setPayload] = useState<Record<string, string>>({});
-  const [data, setData] = useState<any>([]);
+  const [data, setData] = useState<NotificationTemplate[]>([]);
   const navigate = useNavigate();
 
   const noticeData = useMemo(() => getNoticeData(data), [data])
