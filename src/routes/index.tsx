@@ -9,6 +9,7 @@ import {
 import VerifyEmailPage from "pages/verifyEmailPage/VerifyEmailPage";
 import ClassPage from "pages/classPage/ClassPage";
 import TemporaryPage from "pages/temporary/TemporaryPage";
+import UserInfo from "pages/userInfo/UserInfo";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -53,6 +54,10 @@ export const routes = createBrowserRouter([
           {
             path: "/home/verify_email",
             element: <VerifyEmailPage />,
+          },
+          {
+            path: "/home/user_info",
+            element: <UserInfo />,
           },
           {
             path: "/home/course/:courseId",
