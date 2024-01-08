@@ -15,6 +15,11 @@ interface ResponseData {
 
 export type SigninOptions = Omit<SiginupOptions, "name">;
 
+export const updateAvatar = async (newImg: any) => {
+  const res = await userClient.post("/api/user/avatar", newImg);
+  return res.data;
+};
+
 export const signup = async (payload: SiginupOptions) => {
   const res = await authClient.post("/api/auth/signup", { ...payload });
   return res.data;

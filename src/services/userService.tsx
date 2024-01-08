@@ -11,8 +11,8 @@ export const getUser = async () => {
   return res.data;
 };
 
-export const updateUser = async (payload: UpdateUserOptions) => {
-  const res = await userClient.put("/users", { ...payload });
+export const updateUser = async (payload: any) => {
+  const res = await userClient.post("/api/user", payload);
   return res.data;
 };
 

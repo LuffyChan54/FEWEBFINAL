@@ -14,7 +14,7 @@ export interface ClassInfoType {
   name: string;
   desc: string;
   code: string;
-  background: null;
+  background: string;
   createdAt: string;
   attendees: Attendee[];
   host: Attendee;

@@ -1,0 +1,4 @@
+#uploadStudentCardWrap .ant-upload-list-item-container {
+  width: 300px !important;
+  height: 194px !important;
+}
