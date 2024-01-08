@@ -4,8 +4,8 @@ import {config} from "dotenv";
 config();
 // Initialize the Firebase app in the service worker by passing the generated config
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  apiKey: proccess.env.VITE_FIREBASE_API_KEY,
+  authDomain: proccess.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: proccess.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: proccess.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: proccess.env.VITE_FIREBASE_MESSAGE_SENDER_ID,
