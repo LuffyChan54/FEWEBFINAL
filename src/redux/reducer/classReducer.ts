@@ -7,7 +7,7 @@ const defaultState: ClassInfoType[] = [
     name: "string",
     desc: "string",
     code: "string",
-    background: null,
+    background: "",
     createdAt: "string",
     attendees: [],
     host: {
