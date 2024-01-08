@@ -1,11 +1,24 @@
 import React, { useState } from "react";
 import { DownOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import { Modal, Tree } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Space,
+  Tree,
+  message,
+} from "antd";
 import type { DataNode, TreeProps } from "antd/es/tree";
 import { ColumnsType } from "antd/es/table";
-import { changeGradeTypeToNode, deleteGradeById } from "utils/getAllGrades";
+import {
+  changeGradeTypeToNode,
+  deleteGradeById,
+  updateGradeById,
+} from "utils/getAllGrades";
 import { GradeType } from "types/grade/returnCreateGrade";
-import { deleteGrade } from "services/gradeService";
+import { deleteGrade, updateGrade } from "services/gradeService";
 import cloneDeep from "lodash/cloneDeep";
 interface DataType {
   key: React.Key;
@@ -87,16 +100,18 @@ const TreeGradeStructure = ({
   updateColumns,
   setFullGradeStructure,
 }: TreeGradeProps) => {
-  const [gradeDelete, setGradeDelete] = useState<any>({ name: "" });
+  const [gradeContact, setGradeContact] = useState<any>({ name: "" });
   const [openDeleteGrade, setOpenDeleteGrade] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [openUpdateGrade, setOpenUpdateGrade] = useState(false);
+  const [form] = Form.useForm();
   const handleOKDelete = () => {
     setConfirmLoading(true);
-    deleteGrade(gradeDelete.id)
+    deleteGrade(gradeContact.id)
       .then((res) => {
         const newResultAfterDelete = deleteGradeById(
           cloneDeep(fullGradeStructure),
-          gradeDelete.id
+          gradeContact.id
         );
         updateColumns(newResultAfterDelete);
         setFullGradeStructure(newResultAfterDelete);
@@ -116,7 +131,7 @@ const TreeGradeStructure = ({
   };
 
   const handeClickDeleteGrade = (grade: GradeType) => {
-    setGradeDelete(grade);
+    setGradeContact(grade);
     setOpenDeleteGrade(true);
   };
 
@@ -124,7 +139,40 @@ const TreeGradeStructure = ({
     console.log("TreeGradeStructure: AddSub", grade);
   };
   const handeClickUpdateGrade = (grade: GradeType) => {
-    console.log("TreeGradeStructure: Update", grade);
+    form.setFieldsValue({
+      label: grade.label,
+      percentage: grade.percentage,
+      desc: grade.desc,
+    });
+    setGradeContact(grade);
+    setOpenUpdateGrade(true);
+  };
+
+  const handleCancelUpdate = () => {
+    setOpenUpdateGrade(false);
+  };
+  const onFinishUpdate = (values: any) => {
+    setConfirmLoading(true);
+    updateGrade(gradeContact.id, values)
+      .then((res) => {
+        const newResultAfterUpdate = updateGradeById(
+          cloneDeep(fullGradeStructure),
+          gradeContact.id,
+          values
+        );
+        console.log("AfterUpdate: ", newResultAfterUpdate);
+        updateColumns(newResultAfterUpdate);
+        setFullGradeStructure(newResultAfterUpdate);
+        setOpenUpdateGrade(false);
+        messageApi.success("Update grade successfully");
+      })
+      .catch((err) => {
+        messageApi.error("Failed to update grade");
+        console.log("TreeGradeStructure: Failed to update grade", err);
+      })
+      .finally(() => {
+        setConfirmLoading(false);
+      });
   };
 
   const treeData = changeGradeTypeToNode(
@@ -133,6 +181,7 @@ const TreeGradeStructure = ({
     handeClickUpdateGrade,
     handeClickDeleteGrade
   );
+
   return (
     <>
       <Tree
@@ -159,7 +208,59 @@ const TreeGradeStructure = ({
         onCancel={handleCancelDelete}
         okButtonProps={{ danger: true }}
       >
-        <p>Do you want to remove {gradeDelete.label}?</p>
+        <p>Do you want to remove {gradeContact.label}?</p>
+      </Modal>
+
+      <Modal
+        key="updategrade"
+        title="Update grade"
+        open={openUpdateGrade}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancelUpdate}
+        footer={null}
+      >
+        <Form
+          form={form}
+          name="update_grade_form"
+          onFinish={onFinishUpdate}
+          //   style={{ maxWidth: 600 }}
+          autoComplete="off"
+          initialValues={{
+            label: gradeContact.label,
+            percentage: gradeContact.percentage,
+            desc: gradeContact.desc,
+          }}
+        >
+          <Form.Item>
+            <Space
+              key="space_update_grade"
+              style={{ display: "flex", marginBottom: 8 }}
+              align="baseline"
+            >
+              <Form.Item
+                name="label"
+                rules={[{ required: true, message: "Missing name" }]}
+              >
+                <Input placeholder="Name" />
+              </Form.Item>
+              <Form.Item
+                name="percentage"
+                rules={[{ required: true, message: "Missing percentage" }]}
+              >
+                <InputNumber placeholder="Percentage" />
+              </Form.Item>
+              <Form.Item
+                name="desc"
+                rules={[{ required: true, message: "Missing desc" }]}
+              >
+                <Input placeholder="Description" />
+              </Form.Item>
+            </Space>
+            <Button loading={confirmLoading} type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </>
   );

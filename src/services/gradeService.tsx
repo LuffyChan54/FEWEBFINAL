@@ -57,3 +57,11 @@ export const deleteGrade = async (gradeID: any) => {
   const res = await gradeClient.delete(GradeEndpointWTID + "/type/" + gradeID);
   return res.data;
 };
+
+export const updateGrade = async (gradeID: any, newGradeData: any) => {
+  const res = await gradeClient.put(
+    GradeEndpointWTID + "/type/" + gradeID,
+    newGradeData
+  );
+  return res.data;
+};

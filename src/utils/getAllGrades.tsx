@@ -125,3 +125,29 @@ export const deleteGradeById = (
     return [...acc, grade];
   }, [] as GradeType[]);
 };
+
+export const updateGradeById = (
+  grades: GradeType[],
+  gradeIdToUpdate: string,
+  updatedInfo: any
+): GradeType[] => {
+  return grades.map((grade) => {
+    if (grade.id === gradeIdToUpdate) {
+      grade.label = updatedInfo.label;
+      grade.percentage = updatedInfo.percentage;
+      grade.desc = updatedInfo.desc;
+      return cloneDeep(grade);
+    }
+
+    if (grade.gradeSubTypes && grade.gradeSubTypes.length > 0) {
+      // Recursively update subgrades
+      grade.gradeSubTypes = updateGradeById(
+        grade.gradeSubTypes,
+        gradeIdToUpdate,
+        updatedInfo
+      );
+    }
+
+    return grade;
+  });
+};
