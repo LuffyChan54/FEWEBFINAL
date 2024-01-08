@@ -15,6 +15,7 @@ import {
   Tabs,
   TabsProps,
   Tag,
+  Upload,
   message,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -28,6 +29,7 @@ import {
   changeRole,
   downloadTemplate,
   getClassDetail,
+  uploadListStudent,
 } from "services/classService";
 import { sendInvitationEmail } from "services/inviteService";
 import { preload, useSWRConfig } from "swr";
@@ -65,8 +67,10 @@ const ClassPeople = ({
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const { Option } = Select;
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLoadingUploadStudent, setIsLoadingUploadStudent] = useState(false);
   let currentRole = yourRole;
   const { user } = useSelector(getAuthReducer);
+  const [studentsInClass, setStudentsInClass] = useState([]);
 
   if (classDetail.host != null) {
     if (user.userId == classDetail.host.userId) {
@@ -100,6 +104,19 @@ const ClassPeople = ({
       title: "Joined At",
       dataIndex: "joinedAt",
       key: "joinedAt",
+    },
+  ];
+
+  const columnsStudentsInClass: ColumnsType<any> = [
+    {
+      title: "Student ID",
+      dataIndex: "studentId",
+      key: "studentId",
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
     },
   ];
 
@@ -264,6 +281,34 @@ const ClassPeople = ({
         setIsDownloading(false);
       });
   };
+
+  const importFileXLSX = (info: any) => {
+    setIsLoadingUploadStudent(true);
+    if (info.file.status !== "uploading") {
+      const bodyFormData = new FormData();
+      bodyFormData.append("file", info.file.originFileObj);
+      uploadListStudent(courseId, bodyFormData)
+        .then((res: any) => {
+          messageApi.success("Successfully uploaded");
+          const tempStudentInClass: any = [];
+          res.forEach((student: any) => {
+            tempStudentInClass.push({
+              key: student.studentId,
+              name: student.fullname,
+              studentId: student.studentId,
+            });
+          });
+          setStudentsInClass(tempStudentInClass);
+        })
+        .catch((err) => {
+          messageApi.error("Upload failed");
+          console.log("ClassPeople: Failed to upload", err);
+        })
+        .finally(() => {
+          setIsLoadingUploadStudent(false);
+        });
+    }
+  };
   const TabPeople: TabsProps["items"] = [
     {
       label: "Teachers",
@@ -329,9 +374,26 @@ const ClassPeople = ({
         <>
           {currentRole == "HOST" && (
             <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-              <Button icon={<ExportOutlined />} type="primary">
-                Import file xlsx
-              </Button>
+              <Upload
+                action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+                onChange={(info) => importFileXLSX(info)}
+                showUploadList={false}
+              >
+                <Button
+                  style={{
+                    background: "#22b472",
+                    color: "#fff",
+                    outline: "none",
+                    border: "none",
+                  }}
+                  icon={<ExportOutlined />}
+                  type="primary"
+                  loading={isLoadingUploadStudent}
+                >
+                  Import file xlsx
+                </Button>
+              </Upload>
+
               <Button
                 loading={isDownloading}
                 icon={<DownloadOutlined />}
@@ -344,9 +406,9 @@ const ClassPeople = ({
           )}
 
           <Table
-            key="tablestudent"
-            columns={columns}
-            dataSource={Students}
+            key="tableStudentInClass"
+            columns={columnsStudentsInClass}
+            dataSource={studentsInClass}
             virtual
             scroll={{ x: 1000, y: 1000 }}
           />

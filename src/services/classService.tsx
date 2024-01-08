@@ -85,3 +85,17 @@ export const downloadTemplate = async (classID: any) => {
   document.body.removeChild(link);
   return;
 };
+
+export const uploadListStudent = async (courseID: any, listStudent: any) => {
+  const res = await classClient.post(
+    ClassEndpointWTID + courseID + "/import/template",
+    listStudent,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return res.data;
+};
