@@ -11,16 +11,18 @@ import {
   getClassOV,
   ClassOVEndpoint as cacheKey,
 } from "services/classOVService";
+import { firebaseConfig } from "lib/firebase";
 preload(cacheKey, getClassOV);
 
-// src/index.js
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./firebase-messaging-sw.js')
-    .then(registration => {
-      console.log('Service Worker registered with scope:', registration.scope);
+  const firebaseConfigParams = new URLSearchParams(firebaseConfig).toString();
+  navigator.serviceWorker
+    .register(`/firebase-messaging-sw.js?${firebaseConfigParams}`)
+    .then(function (registration) {
+      console.log('Registration successful, scope is:', registration.scope);
     })
-    .catch(error => {
-      console.error('Service Worker registration failed:', error);
+    .catch(function (err) {
+      console.log('Service worker registration failed, error:', err);
     });
 }
 

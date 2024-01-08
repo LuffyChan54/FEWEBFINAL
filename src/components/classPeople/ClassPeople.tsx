@@ -36,8 +36,7 @@ import {
 import { sendInvitationEmail } from "services/inviteService";
 import { preload, useSWRConfig } from "swr";
 import { Attendee, ClassInfoType } from "types";
-import fs from "fs";
-import * as xlsx from "xlsx";
+
 interface ClassPeopleProps {
   courseId: string | undefined;
   classDetail: ClassInfoType;
