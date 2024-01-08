@@ -52,3 +52,8 @@ const getSubGrades = async (grades: GradeType[]): Promise<GradeType[]> => {
   );
   return processedGrades;
 };
+
+export const deleteGrade = async (gradeID: any) => {
+  const res = await gradeClient.delete(GradeEndpointWTID + "/type/" + gradeID);
+  return res.data;
+};

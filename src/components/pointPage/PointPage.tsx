@@ -3,7 +3,7 @@ import { Button, Modal, Switch, Table, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
 import { getFullGradeData } from "services/gradeService";
-import { ReturnCreateGrade } from "types/grade/returnCreateGrade";
+import { GradeType, ReturnCreateGrade } from "types/grade/returnCreateGrade";
 import { getAllGradesIntoColumns } from "utils/getAllGrades";
 import TreeGradeStructure from "./FormCreateGrade/TreeGradeStructure";
 
@@ -60,28 +60,33 @@ const PointPage = ({ courseId }: any) => {
   const [gradeStructureId, setGradeStructureId] = useState<any>("");
   const [isModalViewGradeOpen, setIsModalViewGradeOpen] = useState(false);
   const [widthOfScrollX, setWidthOfScrollX] = useState("162.5%");
+  const [fullGradeStructure, setFullGradeStructure] = useState<GradeType[]>([]);
   const [gradeColumns, setGradeColumns] =
     useState<ColumnsType<DataType>>(InitialColumns);
   const handleCancelCreateGrade = () => {
     setIsModalCreateGradeOpen(false);
   };
 
+  const updateColumns = (newGradeTypes: GradeType[]) => {
+    const temporaryGrades = getAllGradesIntoColumns(
+      newGradeTypes,
+      InitialColumns
+    );
+    const currLength = temporaryGrades.length;
+    const excess = currLength - FIXED_COLUMN;
+    const percentagePerColumn = 100 / FIXED_COLUMN;
+    const excessPercentage = percentagePerColumn * excess;
+    const totalPercentage = excessPercentage + 100;
+    setWidthOfScrollX(totalPercentage + "%");
+    setGradeColumns(temporaryGrades);
+  };
+
   const FetchAllGradesFunction = () => {
     getFullGradeData(courseId)
       .then((resGetFull: ReturnCreateGrade) => {
+        setFullGradeStructure(resGetFull.gradeTypes);
         setGradeStructureId(resGetFull.id);
-        const temporaryGrades = getAllGradesIntoColumns(
-          resGetFull.gradeTypes,
-          InitialColumns
-        );
-        const currLength = temporaryGrades.length;
-        console.log("currenLength: ", currLength);
-        const excess = currLength - FIXED_COLUMN;
-        const percentagePerColumn = 100 / FIXED_COLUMN;
-        const excessPercentage = percentagePerColumn * excess;
-        const totalPercentage = excessPercentage + 100;
-        setWidthOfScrollX(totalPercentage + "%");
-        setGradeColumns(temporaryGrades);
+        updateColumns(resGetFull.gradeTypes);
         messageApi.success("Load structure successfully");
       })
       .catch((err: any) => {
@@ -178,7 +183,20 @@ const PointPage = ({ courseId }: any) => {
         onCancel={handleCancelViewGrade}
         footer={null}
       >
-        <TreeGradeStructure />
+        <TreeGradeStructure
+          gradeColumns={gradeColumns}
+          setGradeColumns={setGradeColumns}
+          InitialColumns={InitialColumns}
+          courseId={courseId}
+          setIsModalCreateGradeOpen={setIsModalCreateGradeOpen}
+          messageApi={messageApi}
+          gradeStructureId={gradeStructureId}
+          FetchAllGradesFunction={FetchAllGradesFunction}
+          fullGradeStructure={fullGradeStructure}
+          setIsModalViewGradeOpen={setIsModalViewGradeOpen}
+          updateColumns={updateColumns}
+          setFullGradeStructure={setFullGradeStructure}
+        />
       </Modal>
       {contextHolder}
     </>
