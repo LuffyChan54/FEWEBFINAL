@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import { Button, Modal, Switch, Table, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
+import { getFullGradeData } from "services/gradeService";
+import { ReturnCreateGrade } from "types/grade/returnCreateGrade";
+import { getAllGradesIntoColumns } from "utils/getAllGrades";
 
 interface DataType {
   key: React.Key;
@@ -13,23 +16,25 @@ interface DataType {
 const InitialColumns: ColumnsType<DataType> = [
   {
     title: "Full Name",
-    width: 100,
+    width: "15%",
     dataIndex: "name",
     key: "name",
     fixed: "left",
   },
   {
-    title: "Age",
-    width: 100,
-    dataIndex: "age",
-    key: "age",
+    title: "Student ID",
+    width: "15%",
+    dataIndex: "studentId",
+    key: "studentId",
     fixed: "left",
+    sorter: (a, b) => a.name.length - b.name.length,
+    sortDirections: ["descend", "ascend"],
   },
   {
     title: "Action",
     key: "operation",
     fixed: "right",
-    width: 100,
+    width: "10%",
     render: () => <a>action</a>,
   },
 ];
@@ -45,15 +50,53 @@ for (let i = 0; i < 100; i++) {
   });
 }
 
+const FIXED_COLUMN = 8;
+
 const PointPage = ({ courseId }: any) => {
   const [fixedTop, setFixedTop] = useState(true);
   const [isModalCreateGradeOpen, setIsModalCreateGradeOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [gradeStructureId, setGradeStructureId] = useState<any>("");
+
+  const [widthOfScrollX, setWidthOfScrollX] = useState("162.5%");
   const [gradeColumns, setGradeColumns] =
     useState<ColumnsType<DataType>>(InitialColumns);
   const handleCancelCreateGrade = () => {
     setIsModalCreateGradeOpen(false);
   };
+
+  const FetchAllGradesFunction = () => {
+    getFullGradeData(courseId)
+      .then((resGetFull: ReturnCreateGrade) => {
+        setGradeStructureId(resGetFull.id);
+        const temporaryGrades = getAllGradesIntoColumns(
+          resGetFull.gradeTypes,
+          InitialColumns
+        );
+        const currLength = temporaryGrades.length;
+        console.log("currenLength: ", currLength);
+        const excess = currLength - FIXED_COLUMN;
+        const percentagePerColumn = 100 / FIXED_COLUMN;
+        const excessPercentage = percentagePerColumn * excess;
+        const totalPercentage = excessPercentage + 100;
+        setWidthOfScrollX(totalPercentage + "%");
+        setGradeColumns(temporaryGrades);
+        messageApi.success("Load structure successfully");
+      })
+      .catch((err: any) => {
+        console.log("PointPage: Failed to load grade structure", err);
+        messageApi.error("Fail to load grade structure");
+      });
+  };
+
+  const timeRender = useRef(0);
+  useEffect(() => {
+    timeRender.current++;
+    if (timeRender.current == 1) {
+      FetchAllGradesFunction();
+    }
+  }, []);
+
   return (
     <>
       <div>
@@ -65,18 +108,18 @@ const PointPage = ({ courseId }: any) => {
           >
             Create new Grade Structure
           </Button>
-          <Button
+          {/* <Button
             type="primary"
             style={{ background: "#ffc069", outline: "none", color: "#000" }}
           >
             Update Grade Structure
-          </Button>
+          </Button> */}
           <Button style={{ outline: "none" }}>View Grade Structure</Button>
         </div>
         <Table
           columns={gradeColumns}
           dataSource={data}
-          scroll={{ x: 1500 }}
+          scroll={{ x: widthOfScrollX }}
           summary={() => (
             <Table.Summary fixed={fixedTop ? "top" : "bottom"}>
               <Table.Summary.Row>
@@ -90,10 +133,10 @@ const PointPage = ({ courseId }: any) => {
                     }}
                   />
                 </Table.Summary.Cell>
-                {/* <Table.Summary.Cell index={2} colSpan={8}>
-                  Points
-                </Table.Summary.Cell> */}
-                {/* <Table.Summary.Cell index={10}>Fix Right</Table.Summary.Cell> */}
+                <Table.Summary.Cell index={2} colSpan={8}>
+                  {/* Points */}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={10}></Table.Summary.Cell>
               </Table.Summary.Row>
             </Table.Summary>
           )}
@@ -111,9 +154,12 @@ const PointPage = ({ courseId }: any) => {
         <FormCreateGrade
           gradeColumns={gradeColumns}
           setGradeColumns={setGradeColumns}
+          InitialColumns={InitialColumns}
           courseId={courseId}
           setIsModalCreateGradeOpen={setIsModalCreateGradeOpen}
           messageApi={messageApi}
+          gradeStructureId={gradeStructureId}
+          FetchAllGradesFunction={FetchAllGradesFunction}
         />
       </Modal>
       {contextHolder}
