@@ -82,6 +82,7 @@ const PointPage = ({ courseId }: any) => {
   };
 
   const FetchAllGradesFunction = () => {
+    messageApi.info("Loading new grades...");
     getFullGradeData(courseId)
       .then((resGetFull: ReturnCreateGrade) => {
         setFullGradeStructure(resGetFull.gradeTypes);

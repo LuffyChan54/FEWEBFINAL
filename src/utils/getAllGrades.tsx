@@ -26,13 +26,17 @@ export const getAllGradesIntoColumns = (
 
 const flattenGradeTypes = (grades: GradeType[]): GradeType[] => {
   let flattenedGrades: GradeType[] = [];
-
+  console.log(grades);
   grades.forEach((grade) => {
+    grade.label =
+      grade.label +
+      ` ${grade.parentId == null ? "(" + grade.percentage + "%)" : ""}`;
     flattenedGrades.push(grade);
 
     if (grade.gradeSubTypes && grade.gradeSubTypes.length > 0) {
       const tempSubType = grade.gradeSubTypes.map((gradesub) => {
-        gradesub.label = gradesub.label + " < " + grade.label;
+        gradesub.label =
+          gradesub.label + ` (${gradesub.percentage}%) ` + " < " + grade.label;
         return gradesub;
       });
       const subGradeTypes = flattenGradeTypes(tempSubType);

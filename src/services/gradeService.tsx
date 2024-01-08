@@ -65,3 +65,11 @@ export const updateGrade = async (gradeID: any, newGradeData: any) => {
   );
   return res.data;
 };
+
+export const addSubGrade = async (gradeID: any, values: any) => {
+  const res = await gradeClient.put(
+    GradeEndpointWTID + "/type/" + gradeID + "/sub/batch",
+    values
+  );
+  return res.data;
+};
