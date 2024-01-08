@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { DownOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  ExclamationCircleOutlined,
+  MinusCircleOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Form,
@@ -18,7 +23,7 @@ import {
   updateGradeById,
 } from "utils/getAllGrades";
 import { GradeType } from "types/grade/returnCreateGrade";
-import { deleteGrade, updateGrade } from "services/gradeService";
+import { addSubGrade, deleteGrade, updateGrade } from "services/gradeService";
 import cloneDeep from "lodash/cloneDeep";
 interface DataType {
   key: React.Key;
@@ -99,11 +104,13 @@ const TreeGradeStructure = ({
   setIsModalViewGradeOpen,
   updateColumns,
   setFullGradeStructure,
+  FetchAllGradesFunction,
 }: TreeGradeProps) => {
   const [gradeContact, setGradeContact] = useState<any>({ name: "" });
   const [openDeleteGrade, setOpenDeleteGrade] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [openUpdateGrade, setOpenUpdateGrade] = useState(false);
+  const [openAddSubGrade, setOpenAddSubGrade] = useState(false);
   const [form] = Form.useForm();
   const handleOKDelete = () => {
     setConfirmLoading(true);
@@ -136,8 +143,28 @@ const TreeGradeStructure = ({
   };
 
   const handeClickAddSubGrade = (grade: GradeType) => {
-    console.log("TreeGradeStructure: AddSub", grade);
+    setGradeContact(grade);
+    setOpenAddSubGrade(true);
   };
+  const handleCancelAddSub = () => {
+    setOpenAddSubGrade(false);
+  };
+  const onFinishSubGrade = (values: any) => {
+    // FetchAllGradesFunction();
+    setConfirmLoading(true);
+    addSubGrade(gradeContact.id, values.subGrades)
+      .then((res) => {
+        FetchAllGradesFunction();
+        setConfirmLoading(false);
+        setOpenAddSubGrade(false);
+      })
+      .catch((err) => {
+        messageApi.error("Failed to add grade sub types");
+        console.log("TreeGradeStructure: Failed to add SubGrade", err);
+        setConfirmLoading(false);
+      });
+  };
+
   const handeClickUpdateGrade = (grade: GradeType) => {
     form.setFieldsValue({
       label: grade.label,
@@ -256,6 +283,75 @@ const TreeGradeStructure = ({
                 <Input placeholder="Description" />
               </Form.Item>
             </Space>
+            <Button loading={confirmLoading} type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        key="addsubgrade"
+        title="Add sub grade"
+        open={openAddSubGrade}
+        onCancel={handleCancelAddSub}
+        footer={null}
+      >
+        <Form
+          name="dynamic_form_sub_grade_item"
+          onFinish={onFinishSubGrade}
+          style={{ maxWidth: 600 }}
+          autoComplete="off"
+        >
+          <Form.List name="subGrades">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space
+                    key={key}
+                    style={{ display: "flex", marginBottom: 8 }}
+                    align="baseline"
+                  >
+                    <Form.Item
+                      {...restField}
+                      name={[name, "label"]}
+                      rules={[{ required: true, message: "Missing name" }]}
+                    >
+                      <Input placeholder="Name" />
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "percentage"]}
+                      rules={[
+                        { required: true, message: "Missing percentage" },
+                      ]}
+                    >
+                      <InputNumber placeholder="Percentage" />
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "desc"]}
+                      rules={[{ required: true, message: "Missing desc" }]}
+                    >
+                      <Input placeholder="Description" />
+                    </Form.Item>
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Space>
+                ))}
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    Add field
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
+          <Form.Item>
             <Button loading={confirmLoading} type="primary" htmlType="submit">
               Submit
             </Button>
