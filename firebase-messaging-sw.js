@@ -1,6 +1,7 @@
 // Scripts for firebase and firebase messaging
-const firebase = require("firebase");
-require("dotenv").config();
+import  firebase from "firebase";
+import {config} from "dotenv";
+config();
 // Initialize the Firebase app in the service worker by passing the generated config
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
