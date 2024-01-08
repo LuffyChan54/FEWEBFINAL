@@ -1,6 +1,11 @@
 import { Tag } from "antd";
 // @ts-ignore
 import NoticeIcon from "components/NoticeIcon/index.jsx";
+import { onMessage } from "firebase/messaging";
+import { messaging, onMessageListener, requestForToken } from "lib/firebase";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getNotifications, upsertUserToken } from "services/notificationService";
 const data = [
   {
     id: "000000001",
@@ -121,14 +126,14 @@ const data = [
 type NoticeStatus = "todo" | "processing" | "urgent" | "doing";
 interface Notice {
   status: NoticeStatus;
-  id: any;
+  id: string;
   key: any;
+  content: string;
   extra: any;
+  title: string;
+  avatar?: string;
   // Add other properties as needed
 }
-function onItemClick(item: any, tabProps: any) {}
-
-function onClear(tabTitle: any) {}
 
 function getNoticeData(notices: any) {
   if (notices.length === 0) {
@@ -140,7 +145,7 @@ function getNoticeData(notices: any) {
     if (newNotice.id) {
       newNotice.key = newNotice.id;
     }
-    if (newNotice.extra && newNotice.status) {
+    if (newNotice.content) {
       const color = {
         todo: "",
         processing: "blue",
@@ -149,12 +154,16 @@ function getNoticeData(notices: any) {
       }[newNotice.status];
       newNotice.extra = (
         <Tag color={color} style={{ marginRight: 0 }}>
-          {newNotice.extra}
+          {newNotice.content}
         </Tag>
       );
+      newNotice.title = notice.name;
+      newNotice.avatar = notice.avatar;
     }
     return newNotice;
   });
+
+  console.log("new Data", newNotices);
   return newNotices.reduce((pre: any, data: any) => {
     if (!pre[data.type]) {
       pre[data.type] = [];
@@ -164,11 +173,48 @@ function getNoticeData(notices: any) {
   }, {});
 }
 
-const noticeData = getNoticeData(data);
-const MyAlert = () => (
-  <NoticeIcon
+// const noticeData = getNoticeData(data);
+const MyAlert = () => {
+  const [_, setPayload] = useState<Record<string, string>>({});
+  const [data, setData] = useState<any>([]);
+  const navigate = useNavigate();
+
+  const noticeData = useMemo(() => getNoticeData(data), [data])
+  useEffect(() => {
+    requestForToken()
+      .then(token => {
+        if(!token) {
+          return;
+        }
+        upsertUserToken(token);
+      })
+
+     getNotifications()
+      .then(notifications => {
+        console.log(notifications)
+        setData(notifications || []);
+      })
+  }, []);
+
+  const onItemClick = (item: any, tabProps: any) =>  {
+    console.log(item, tabProps)
+    navigate(item.redirectEndpoint);
+  }
+
+  const onClear = (tabTitle: any) => {
+    console.log(tabTitle)
+  }
+
+  
+  onMessageListener()
+    .then((message: any) => {
+      setPayload(message.data);
+      setData([...data, message.data]);
+    })
+    .catch((err) => console.log('failed: ', err));
+  return  (<NoticeIcon
     className="notice-icon"
-    count={5}
+    count={data.length}
     onItemClick={onItemClick}
     onClear={onClear}
     loading={false}
@@ -177,24 +223,24 @@ const MyAlert = () => (
       tabKey="notification"
       list={noticeData.notification}
       title="notification"
-      emptyText="你已查看所有通知"
+      emptyText="Empty Notifications"
       emptyImage="https://gw.alipayobjects.com/zos/rmsportal/wAhyIChODzsoKIOBHcBk.svg"
     />
     <NoticeIcon.Tab
       tabKey="message"
       list={noticeData.message}
       title="message"
-      emptyText="您已读完所有消息"
+      emptyText="Empty Messages"
       emptyImage="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
     />
     <NoticeIcon.Tab
       tabKey="event"
       list={noticeData.event}
       title="event"
-      emptyText="你已完成所有待办"
+      emptyText="Empty Events"
       emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
     />
-  </NoticeIcon>
-);
+  </NoticeIcon>);
+}
 
 export default MyAlert;

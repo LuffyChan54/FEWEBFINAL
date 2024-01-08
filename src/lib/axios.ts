@@ -17,6 +17,9 @@ export const classClient = axios.create({
 export const inviteClient = axios.create({
   baseURL: import.meta.env.VITE_COURSE_URL,
 });
+export const notificationClient = axios.create({
+  baseURL: import.meta.env.VITE_NOTIFICATION_URL,
+});
 
 const getRefreshToken = async (token: string) => {
   const res = await axios.post(
@@ -76,5 +79,9 @@ classClient.interceptors.request.use(configFunction, (err) => {
 });
 
 inviteClient.interceptors.request.use(configFunction, (err) => {
+  return Promise.reject(err);
+});
+
+notificationClient.interceptors.request.use(configFunction, (err) => {
   return Promise.reject(err);
 });

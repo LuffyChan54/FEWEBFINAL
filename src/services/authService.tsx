@@ -67,7 +67,7 @@ export const signinFB = async () => {
 
 export const getTokenSocialLogin = async (code: string) => {
   const res = await authClient.post(
-    "api/auth/refresh-token",
+    "api/auth/social",
     {
       code,
       redirectUri: import.meta.env.VITE_AUTH_REDIRECT_URL,
