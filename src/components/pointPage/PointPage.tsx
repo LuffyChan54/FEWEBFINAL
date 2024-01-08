@@ -5,6 +5,7 @@ import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
 import { getFullGradeData } from "services/gradeService";
 import { ReturnCreateGrade } from "types/grade/returnCreateGrade";
 import { getAllGradesIntoColumns } from "utils/getAllGrades";
+import TreeGradeStructure from "./FormCreateGrade/TreeGradeStructure";
 
 interface DataType {
   key: React.Key;
@@ -57,7 +58,7 @@ const PointPage = ({ courseId }: any) => {
   const [isModalCreateGradeOpen, setIsModalCreateGradeOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [gradeStructureId, setGradeStructureId] = useState<any>("");
-
+  const [isModalViewGradeOpen, setIsModalViewGradeOpen] = useState(false);
   const [widthOfScrollX, setWidthOfScrollX] = useState("162.5%");
   const [gradeColumns, setGradeColumns] =
     useState<ColumnsType<DataType>>(InitialColumns);
@@ -97,6 +98,10 @@ const PointPage = ({ courseId }: any) => {
     }
   }, []);
 
+  const handleCancelViewGrade = () => {
+    setIsModalViewGradeOpen(false);
+  };
+
   return (
     <>
       <div>
@@ -114,7 +119,12 @@ const PointPage = ({ courseId }: any) => {
           >
             Update Grade Structure
           </Button> */}
-          <Button style={{ outline: "none" }}>View Grade Structure</Button>
+          <Button
+            style={{ outline: "none" }}
+            onClick={() => setIsModalViewGradeOpen(true)}
+          >
+            View Grade Structure
+          </Button>
         </div>
         <Table
           columns={gradeColumns}
@@ -161,6 +171,14 @@ const PointPage = ({ courseId }: any) => {
           gradeStructureId={gradeStructureId}
           FetchAllGradesFunction={FetchAllGradesFunction}
         />
+      </Modal>
+      <Modal
+        title="Grade Structure"
+        open={isModalViewGradeOpen}
+        onCancel={handleCancelViewGrade}
+        footer={null}
+      >
+        <TreeGradeStructure />
       </Modal>
       {contextHolder}
     </>
