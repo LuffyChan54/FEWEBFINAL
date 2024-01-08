@@ -2,7 +2,13 @@ import React, { useState } from "react";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Form, Input, InputNumber, Space } from "antd";
 import { ColumnsType } from "antd/es/table";
-import { createGradeStructure } from "services/gradeService";
+import {
+  createGradeStructure,
+  createGradeStructureBatch,
+  getFullGradeData,
+} from "services/gradeService";
+import { ReturnCreateGrade } from "types/grade/returnCreateGrade";
+import { getAllGradesIntoColumns } from "utils/getAllGrades";
 
 interface DataType {
   key: React.Key;
@@ -17,6 +23,9 @@ interface FormCreateGradeProps {
   courseId: String;
   setIsModalCreateGradeOpen: Function;
   messageApi: any;
+  InitialColumns: ColumnsType<DataType>;
+  gradeStructureId: String;
+  FetchAllGradesFunction: Function;
 }
 
 const FormCreateGrade = ({
@@ -25,28 +34,41 @@ const FormCreateGrade = ({
   courseId,
   setIsModalCreateGradeOpen,
   messageApi,
+  InitialColumns,
+  gradeStructureId,
+  FetchAllGradesFunction,
 }: FormCreateGradeProps) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   const onFinish = (values: any) => {
     setConfirmLoading(true);
     console.log("Received values of form:", values);
-    createGradeStructure(courseId, values)
-      .then((res: any) => {
-        console.log("Form create grade res:  ", res);
-        setIsModalCreateGradeOpen(false);
-        // setGradeColumns((prev: ColumnsType<DataType> ):ColumnsType<DataType> => {
 
-        // })
-        messageApi.success("Create grade structure successfully");
-      })
-      .catch((err: any) => {
-        console.log("FormCreateGrade: Failed to create grade structure", err);
-        messageApi.error("Failed to create grade structure");
-      })
-      .finally(() => {
-        setConfirmLoading(false);
-      });
+    if (gradeStructureId != "") {
+      createGradeStructureBatch(gradeStructureId, values)
+        .then((res: any) => {
+          messageApi.success("Create grade structure successfully");
+          setIsModalCreateGradeOpen(false);
+          FetchAllGradesFunction();
+        })
+        .catch((err: any) => {
+          console.log("FormCreateGrade: Failed to create grade structure", err);
+          messageApi.error("Failed to create grade structure");
+        })
+        .finally(() => setConfirmLoading(false));
+    } else {
+      createGradeStructure(courseId, values)
+        .then((res: any) => {
+          messageApi.success("Create grade structure successfully");
+          setIsModalCreateGradeOpen(false);
+          FetchAllGradesFunction();
+        })
+        .catch((err: any) => {
+          console.log("FormCreateGrade: Failed to create grade structure", err);
+          messageApi.error("Failed to create grade structure");
+        })
+        .finally(() => setConfirmLoading(false));
+    }
   };
 
   return (
@@ -79,7 +101,11 @@ const FormCreateGrade = ({
                 >
                   <InputNumber placeholder="Percentage" />
                 </Form.Item>
-                <Form.Item {...restField} name={[name, "desc"]}>
+                <Form.Item
+                  {...restField}
+                  name={[name, "desc"]}
+                  rules={[{ required: true, message: "Missing desc" }]}
+                >
                   <Input placeholder="Description" />
                 </Form.Item>
                 <MinusCircleOutlined onClick={() => remove(name)} />

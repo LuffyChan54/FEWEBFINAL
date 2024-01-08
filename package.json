@@ -23,6 +23,7 @@
     "firebase": "^10.6.0",
     "i": "^0.3.7",
     "jwt-decode": "^4.0.0",
+    "lodash": "^4.17.21",
     "npm": "^10.2.5",
     "path": "^0.12.7",
     "react": "^18.2.0",
@@ -36,6 +37,7 @@
     "use-merge-value": "^1.2.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.202",
     "@types/node": "^20.9.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
