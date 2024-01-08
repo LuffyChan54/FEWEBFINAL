@@ -15,12 +15,16 @@ import {
 import { Tabs, TabsProps, message } from "antd";
 import ClassOverview from "components/classOverview/ClassOverview";
 import ClassPeople from "components/classPeople/ClassPeople";
+import PointPage from "components/pointPage/PointPage";
 import { addClassOptions, removeClassOptions } from "helpers";
 import {
   updateClassBackground,
   updateClassOptions,
 } from "helpers/class/classOVMutation";
-import { changeRoleMutation } from "helpers/remoteOptions/ChangeRoleOptions.";
+import {
+  changeRoleMutation,
+  removeAttendeeMutation,
+} from "helpers/remoteOptions/ChangeRoleOptions.";
 import { memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { redirect, useNavigate, useParams } from "react-router-dom";
@@ -157,6 +161,11 @@ const ClassPage = memo(() => {
     mutate(changeRoleMutation(classDetail, values));
   };
 
+  const removeAttendeeDirectly = (attendeeID: any) => {
+    console.log("ClassPage: ", classDetail);
+    mutate(removeAttendeeMutation(attendeeID, classDetail));
+  };
+
   //TODO: IPLM OVERVIEW COMPONENT AND PEOPLE COMPONENT;
 
   const items: TabsProps["items"] = [
@@ -190,6 +199,7 @@ const ClassPage = memo(() => {
           courseId={courseId}
           yourRole={yourRole}
           updateRoleAttendeeDirectly={updateRoleAttendeeDirectly}
+          removeAttendeeDirectly={removeAttendeeDirectly}
         />
       ),
     },
@@ -200,7 +210,11 @@ const ClassPage = memo(() => {
         </>
       ),
       key: "points",
-      children: "",
+      children: (
+        <>
+          <PointPage courseId={courseId} />
+        </>
+      ),
     },
   ];
 

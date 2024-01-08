@@ -25,6 +25,21 @@ export const changeRoleMutation = (
     }
   }
 
-  console.log("ChangeRoleOptions: ", currClassDetails);
   return { ...currClassDetails };
+};
+
+export const removeAttendeeMutation = (
+  attendeeID: any,
+  currenData: ClassInfoType
+) => {
+  if (currenData.attendees != null && currenData.attendees.length != 0) {
+    const currAttendees = [...currenData.attendees];
+    const newAttendees = currAttendees.filter((st) => {
+      if (st.userId != attendeeID) {
+        return st;
+      }
+    });
+    currenData.attendees = newAttendees;
+  }
+  return { ...currenData };
 };
