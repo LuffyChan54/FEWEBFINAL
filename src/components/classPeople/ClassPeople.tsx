@@ -1,5 +1,6 @@
 import {
   DownloadOutlined,
+  ExclamationCircleOutlined,
   ExportOutlined,
   UserAddOutlined,
 } from "@ant-design/icons";
@@ -29,6 +30,7 @@ import {
   changeRole,
   downloadTemplate,
   getClassDetail,
+  removeAttendee,
   uploadListStudent,
 } from "services/classService";
 import { sendInvitationEmail } from "services/inviteService";
@@ -41,6 +43,7 @@ interface ClassPeopleProps {
   classDetail: ClassInfoType;
   yourRole: String;
   updateRoleAttendeeDirectly: Function;
+  removeAttendeeDirectly: Function;
 }
 
 interface dataTableType
@@ -53,6 +56,7 @@ const ClassPeople = ({
   classDetail,
   yourRole,
   updateRoleAttendeeDirectly,
+  removeAttendeeDirectly,
 }: ClassPeopleProps) => {
   // preload(ClassEndpointWTID + courseId, () => getClassDetail(courseId));
 
@@ -71,6 +75,30 @@ const ClassPeople = ({
   let currentRole = yourRole;
   const { user } = useSelector(getAuthReducer);
   const [studentsInClass, setStudentsInClass] = useState([]);
+  const [openRemoveAttendee, setOpenRemoveAttendee] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [removeAttendeeInfoCard, setRemoveAttendeeInfoCard] = useState<any>({
+    name: "",
+  });
+  const handleCancelRemove = () => {
+    setOpenRemoveAttendee(false);
+  };
+  const handleOKRemove = () => {
+    setConfirmLoading(true);
+    removeAttendee(courseId, removeAttendeeInfoCard.key)
+      .then((res: any) => {
+        messageApi.success("Remove attendee successfully");
+        setOpenRemoveAttendee(false);
+        removeAttendeeDirectly(removeAttendeeInfoCard.key);
+      })
+      .catch((err: any) => {
+        console.log("ClassPeople: Failed to remove", err);
+        messageApi.error("Failed to remove attendee");
+      })
+      .finally(() => {
+        setConfirmLoading(false);
+      });
+  };
 
   if (classDetail.host != null) {
     if (user.userId == classDetail.host.userId) {
@@ -130,10 +158,17 @@ const ClassPeople = ({
             <Space size="middle">
               {value.role != "HOST" && (
                 <>
-                  <Button onClick={() => handleChangeRole(value)}>
+                  <Button
+                    style={{ outline: "none" }}
+                    onClick={() => handleChangeRole(value)}
+                  >
                     Change role
                   </Button>
-                  <Button danger onClick={() => handleRemove(value)}>
+                  <Button
+                    style={{ outline: "none" }}
+                    danger
+                    onClick={() => handleRemove(value)}
+                  >
                     Remove
                   </Button>
                 </>
@@ -150,7 +185,11 @@ const ClassPeople = ({
                   {/* <Button onClick={() => handleChangeRole(value)}>
                     Change role
                   </Button> */}
-                  <Button danger onClick={() => handleRemove(value)}>
+                  <Button
+                    style={{ outline: "none" }}
+                    danger
+                    onClick={() => handleRemove(value)}
+                  >
                     Remove
                   </Button>
                 </>
@@ -176,7 +215,10 @@ const ClassPeople = ({
     });
     setIsChangeRoleOpen(true);
   };
-  const handleRemove = (value: any) => {};
+  const handleRemove = (value: any) => {
+    setRemoveAttendeeInfoCard(value);
+    setOpenRemoveAttendee(true);
+  };
 
   let Teachers: dataTableType[] = [];
   let Students: dataTableType[] = [];
@@ -499,6 +541,23 @@ const ClassPeople = ({
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title={
+          <>
+            <ExclamationCircleOutlined
+              style={{ color: "#ffc069", marginRight: "10px" }}
+            />{" "}
+            Remove Attendee
+          </>
+        }
+        open={openRemoveAttendee}
+        onOk={handleOKRemove}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancelRemove}
+        okButtonProps={{ danger: true }}
+      >
+        <p>Do you want to remove {removeAttendeeInfoCard.name}?</p>
       </Modal>
     </>
   );

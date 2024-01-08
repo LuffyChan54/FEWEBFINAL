@@ -20,6 +20,9 @@ export const inviteClient = axios.create({
 export const notificationClient = axios.create({
   baseURL: import.meta.env.VITE_NOTIFICATION_URL,
 });
+export const gradeClient = axios.create({
+  baseURL: import.meta.env.VITE_GRADE_URL,
+});
 
 const getRefreshToken = async (token: string) => {
   const res = await axios.post(
@@ -65,6 +68,10 @@ const configFunction = async (config: InternalAxiosRequestConfig<any>) => {
   config.headers.Authorization = `Bearer ${accessToken}`;
   return config;
 };
+
+gradeClient.interceptors.request.use(configFunction, (err) => {
+  return Promise.reject(err);
+});
 
 userClient.interceptors.request.use(configFunction, (err) => {
   return Promise.reject(err);
