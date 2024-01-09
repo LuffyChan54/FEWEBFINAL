@@ -51,9 +51,15 @@ export const getUserStudentCard = async (userId: string) => {
   return res.data;
 };
 
-export const getCourses = async (filter: Filter, userId: string) => {
+export const getAllCourses = async (filter: Filter) => {
   const res = await classClient.get(
-    `/api/admin/course/take=${filter.take}&skip=${filter.skip}$userId=${userId}`
+    `/api/admin/course/all?take=${filter.take}&skip=${filter.skip}`
+  );
+  return res.data;
+};
+export const getCourses = async (userId: string, filter: Filter) => {
+  const res = await classClient.get(
+    `/api/admin/course?take=${filter.take}&skip=${filter.skip}&userId=${userId}`
   );
   return res.data;
 };
@@ -63,27 +69,17 @@ export const getCourse = async (courseId: string) => {
   return res.data;
 };
 
-export const createCourse = async (
+export const createCourse = async (createCourse: CreateCourse) => {
+  const res = await classClient.post(`/api/admin/course`, createCourse);
+  return res.data;
+};
+
+export const toggleActiveClass = async (
   courseId: string,
-  createCourse: CreateCourse
+  isActive: boolean
 ) => {
-  const res = await classClient.post(
-    `/api/admin/course/${courseId}`,
-    createCourse
-  );
-  return res.data;
-};
-
-export const inactiveCourse = async (courseId: string) => {
   const res = await classClient.put(`/api/admin/course/${courseId}`, {
-    isActive: false,
-  });
-  return res.data;
-};
-
-export const activeCourse = async (courseId: string) => {
-  const res = await classClient.put(`/api/admin/course/${courseId}`, {
-    active: true,
+    isActive: isActive,
   });
   return res.data;
 };

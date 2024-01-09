@@ -18,4 +18,5 @@ export interface ClassInfoType {
   createdAt: string;
   attendees: Attendee[];
   host: Attendee;
+  isActive?: boolean;
 }
