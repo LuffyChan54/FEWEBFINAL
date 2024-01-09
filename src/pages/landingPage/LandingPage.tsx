@@ -33,7 +33,7 @@ const LandingPage = () => {
           dispatch(
             signin({
               user: userInfo,
-              token,
+              token
             })
           );
           toast.success("Log In Successfully", { theme: "colored" });

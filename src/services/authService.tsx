@@ -1,5 +1,6 @@
 import { authClient } from "lib/axios";
 import { userClient } from "lib/axios";
+import { UserFullType } from "types";
 import { getNextExpiresTime } from "utils/expiresTime";
 export type SiginupOptions = {
   email: string;
@@ -11,6 +12,7 @@ interface ResponseData {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+  user: UserFullType;
 }
 
 export type SigninOptions = Omit<SiginupOptions, "name">;
@@ -27,14 +29,15 @@ export const signup = async (payload: SiginupOptions) => {
 
 export const signin = async (payload: SigninOptions) => {
   const res = await authClient.post("/api/auth/login", { ...payload });
-  const { accessToken, refreshToken, expiresIn } = res.data as ResponseData;
-  const resUser = await userClient.get("/api/user", {
-    headers: {
-      Authorization: "Bearer " + accessToken,
-    },
-  });
+  const { accessToken, refreshToken, expiresIn, user } =
+    res.data as ResponseData;
+  // const resUser = await userClient.get("/api/user", {
+  //   headers: {
+  //     Authorization: "Bearer " + accessToken,
+  //   },
+  // });
 
-  const user = resUser.data;
+  // const user = resUser.data;
 
   return {
     userInfo: {
@@ -79,25 +82,22 @@ export const getTokenSocialLogin = async (code: string) => {
     },
     {}
   );
-  const { accessToken, refreshToken, expiresIn } = res.data as ResponseData;
 
-  const resUser = await userClient.get("/api/user", {
-    headers: {
-      Authorization: "Bearer " + accessToken,
-    },
-  });
-  const user = resUser.data;
+  console.log(res.data);
+  const { accessToken, refreshToken, expiresIn, user } =
+    res.data as ResponseData;
+
+  // const resUser = await userClient.get("/api/user", {
+  //   headers: {
+  //     Authorization: "Bearer " + accessToken,
+  //   },
+  // });
+  // const user = resUser.data;
 
   // console.log(user);
 
   return {
-    userInfo: {
-      userId: user.userId,
-      email: user.email,
-      emailVerified: user.emailVerified,
-      name: user.name,
-      picture: user.picture,
-    },
+    userInfo: user,
     token: {
       accessToken,
       refreshToken,

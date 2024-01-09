@@ -17,12 +17,16 @@ function ProtectRoute({ allowRoles }: { allowRoles?: any[] }) {
 }
 
 export function NavigateFromProtectToUnProtectRoute() {
-  const { token } = useSelector(getAuthReducer);
+  const { token, user } = useSelector(getAuthReducer);
   const location = useLocation();
+  console.log(user);
+  const roleRedirect =
+    user.userMetadata?.role === "ADMIN" ? "/admin/home" : "/home";
+
   return !isTokenStillValid(token.expiresTime) ? (
     <Outlet />
   ) : (
-    <Navigate to="/home" state={{ from: location }} replace />
+    <Navigate to={roleRedirect} state={{ from: location }} replace />
   );
 }
 export default ProtectRoute;
