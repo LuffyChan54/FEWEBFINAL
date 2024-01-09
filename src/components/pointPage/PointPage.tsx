@@ -1,11 +1,18 @@
 import React, { useEffect, useReducer, useRef, useState } from "react";
-import { Button, Modal, Switch, Table, message } from "antd";
+import { Button, Modal, Switch, Table, Upload, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
-import { getFullGradeData } from "services/gradeService";
+import {
+  downloadGradeTemplate,
+  downloadGradeTypeTemplate,
+  getFullGradeData,
+  uploadGradeType,
+  uploadStudentGrade,
+} from "services/gradeService";
 import { GradeType, ReturnCreateGrade } from "types/grade/returnCreateGrade";
 import { getAllGradesIntoColumns } from "utils/getAllGrades";
 import TreeGradeStructure from "./FormCreateGrade/TreeGradeStructure";
+import { DownloadOutlined, ExportOutlined } from "@ant-design/icons";
 
 interface DataType {
   key: React.Key;
@@ -32,10 +39,16 @@ const InitialColumns: ColumnsType<DataType> = [
     sortDirections: ["descend", "ascend"],
   },
   {
+    title: "Total grade",
+    key: "totalrade",
+    fixed: "right",
+    width: "5%",
+  },
+  {
     title: "Action",
     key: "operation",
     fixed: "right",
-    width: "10%",
+    width: "5%",
     render: () => <a>action</a>,
   },
 ];
@@ -61,16 +74,86 @@ const PointPage = ({ courseId }: any) => {
   const [isModalViewGradeOpen, setIsModalViewGradeOpen] = useState(false);
   const [widthOfScrollX, setWidthOfScrollX] = useState("162.5%");
   const [fullGradeStructure, setFullGradeStructure] = useState<GradeType[]>([]);
+  const [isLoadingUploadStudentGrade, setIsLoadingUploadStudentGrade] =
+    useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [gradeColumns, setGradeColumns] =
     useState<ColumnsType<DataType>>(InitialColumns);
   const handleCancelCreateGrade = () => {
     setIsModalCreateGradeOpen(false);
   };
 
+  const handleUploadListGrade = (info: any, grade: GradeType) => {
+    if (info.file.status !== "uploading") {
+      const bodyFormData = new FormData();
+      bodyFormData.append("file", info.file.originFileObj);
+      messageApi.open({
+        key: "upload_grade_type_template",
+        type: "loading",
+        content: "Uploading grade list for " + grade.label,
+        duration: 0,
+      });
+      uploadGradeType(grade.id, bodyFormData)
+        .then((res: any) => {
+          console.log("UPLOA RES:", res);
+          messageApi.open({
+            key: "upload_grade_type_template",
+            type: "success",
+            content: "Successfully uploaded",
+            duration: 2,
+          });
+        })
+        .catch((err) => {
+          console.log("PointPage: Failed to upload list grade", err);
+          messageApi.open({
+            key: "upload_grade_type_template",
+            type: "error",
+            content: "Failed to upload grade list",
+            duration: 2,
+          });
+        })
+        .finally(() => {});
+    }
+  };
+
+  const handleMarkFinalize = (grade: GradeType) => {};
+  const hanlemarkUnFinalize = (grade: GradeType) => {};
+  const hanleDownloadGradeTypeTemplate = (grade: GradeType) => {
+    messageApi.open({
+      key: "download_grade_type_template",
+      type: "loading",
+      content: "Downloading grade template for " + grade.label,
+      duration: 0,
+    });
+    downloadGradeTypeTemplate(grade.id)
+      .then(() => {
+        messageApi.open({
+          key: "download_grade_type_template",
+          type: "success",
+          content: "Successfully downloaded",
+          duration: 2,
+        });
+      })
+      .catch((err: any) => {
+        console.log("PointPage: Error downloading gradetype template", err);
+        messageApi.open({
+          key: "download_grade_type_template",
+          type: "error",
+          content: "Failed to download",
+          duration: 2,
+        });
+      })
+      .finally(() => {});
+  };
+
   const updateColumns = (newGradeTypes: GradeType[]) => {
     const temporaryGrades = getAllGradesIntoColumns(
       newGradeTypes,
-      InitialColumns
+      InitialColumns,
+      handleUploadListGrade,
+      handleMarkFinalize,
+      hanlemarkUnFinalize,
+      hanleDownloadGradeTypeTemplate
     );
     const currLength = temporaryGrades.length;
     const excess = currLength - FIXED_COLUMN;
@@ -87,6 +170,7 @@ const PointPage = ({ courseId }: any) => {
       .then((resGetFull: ReturnCreateGrade) => {
         setFullGradeStructure(resGetFull.gradeTypes);
         setGradeStructureId(resGetFull.id);
+        console.log("gradestrucure id: ", resGetFull.id);
         updateColumns(resGetFull.gradeTypes);
         messageApi.success("Load structure successfully");
       })
@@ -108,29 +192,103 @@ const PointPage = ({ courseId }: any) => {
     setIsModalViewGradeOpen(false);
   };
 
+  const importFileXLSX = (info: any) => {
+    // setIsLoadingUploadStudentGrade(true);
+    // if (info.file.status !== "uploading") {
+    //   const bodyFormData = new FormData();
+    //   bodyFormData.append("file", info.file.originFileObj);
+    //   uploadStudentGrade(courseId, bodyFormData)
+    //     .then((res: any) => {
+    //       messageApi.success("Successfully uploaded");
+    //       const tempStudentInClass: any = [];
+    //       res.forEach((student: any) => {
+    //         tempStudentInClass.push({
+    //           key: student.studentId,
+    //           name: student.fullname,
+    //           studentId: student.studentId,
+    //         });
+    //       });
+    //       setStudentsInClass(tempStudentInClass);
+    //     })
+    //     .catch((err : any) => {
+    //       messageApi.error("Upload failed");
+    //       console.log("PointPage: Failed to upload", err);
+    //     })
+    //     .finally(() => {
+    //       setIsLoadingUploadStudentGrade(false);
+    //     });
+    // }
+  };
+
+  const handleDownloadGradeTemplate = () => {
+    setIsDownloading(true);
+    downloadGradeTemplate(gradeStructureId)
+      .then(() => {
+        messageApi.success("Successfully downloaded");
+      })
+      .catch((err) => {
+        console.log("PointPage: Failed to download template", err);
+        messageApi.error("Failed to download");
+      })
+      .finally(() => {
+        setIsDownloading(false);
+      });
+  };
+
   return (
     <>
       <div>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-          <Button
-            type="primary"
-            style={{ outline: "none" }}
-            onClick={() => setIsModalCreateGradeOpen(true)}
-          >
-            Create new Grade Structure
-          </Button>
-          {/* <Button
-            type="primary"
-            style={{ background: "#ffc069", outline: "none", color: "#000" }}
-          >
-            Update Grade Structure
-          </Button> */}
-          <Button
-            style={{ outline: "none" }}
-            onClick={() => setIsModalViewGradeOpen(true)}
-          >
-            View Grade Structure
-          </Button>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+            <Button
+              type="primary"
+              style={{ outline: "none" }}
+              onClick={() => setIsModalCreateGradeOpen(true)}
+            >
+              Create new Grade Structure
+            </Button>
+            {/* <Button
+              type="primary"
+              style={{ background: "#ffc069", outline: "none", color: "#000" }}
+            >
+              Update Grade Structure
+            </Button> */}
+            <Button
+              style={{ outline: "none" }}
+              onClick={() => setIsModalViewGradeOpen(true)}
+            >
+              View Grade Structure
+            </Button>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+            <Button
+              loading={isDownloading}
+              icon={<DownloadOutlined />}
+              style={{ outline: "none" }}
+              type="primary"
+              onClick={() => handleDownloadGradeTemplate()}
+            >
+              Download board grade
+            </Button>
+            {/* <Upload
+              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+              onChange={(info) => importFileXLSX(info)}
+              showUploadList={false}
+            >
+              <Button
+                style={{
+                  outline: "none",
+                  border: "none",
+                }}
+                icon={<ExportOutlined />}
+                type="primary"
+                loading={isLoadingUploadStudentGrade}
+              >
+                Import file xlsx
+              </Button>
+            </Upload> */}
+          </div>
         </div>
         <Table
           columns={gradeColumns}

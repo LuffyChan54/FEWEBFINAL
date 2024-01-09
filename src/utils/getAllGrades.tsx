@@ -1,27 +1,88 @@
 import { ColumnsType } from "antd/es/table";
 import { GradeType } from "types/grade/returnCreateGrade";
 import cloneDeep from "lodash/cloneDeep";
-import { Button, Tooltip } from "antd";
+import { Button, Tooltip, Upload } from "antd";
 import {
   DeleteOutlined,
+  DownloadOutlined,
+  ImportOutlined,
+  NotificationOutlined,
   PartitionOutlined,
+  SoundOutlined,
   ToolOutlined,
 } from "@ant-design/icons";
 export const getAllGradesIntoColumns = (
   gradeInRecursion: GradeType[],
-  initialValue: any
+  initialValue: any,
+  handleUploadListGrade: any,
+  handleMarkFinalize: any,
+  hanlemarkUnFinalize: any,
+  hanleDownloadGradeTemplate: any
 ): any => {
   const newGradeInRecursion = cloneDeep(gradeInRecursion);
   const allGrades: GradeType[] = flattenGradeTypes(newGradeInRecursion);
 
   const newColumns = allGrades.map((grade) => ({
-    title: grade.label,
+    title: (
+      <>
+        <div>{grade.label} </div>
+        <Tooltip title="Download grade template">
+          <DownloadOutlined
+            style={{
+              outline: "none",
+              cursor: "pointer",
+              color: "#23b574",
+            }}
+            onClick={() => hanleDownloadGradeTemplate(grade)}
+          />
+        </Tooltip>
+
+        <Upload
+          action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+          onChange={(info) => handleUploadListGrade(info, grade)}
+          showUploadList={false}
+        >
+          <Tooltip title="Upload grade list">
+            <ImportOutlined
+              style={{
+                outline: "none",
+                cursor: "pointer",
+                color: "#23b574",
+                marginLeft: "20px",
+              }}
+            />
+          </Tooltip>
+        </Upload>
+
+        <Tooltip title={grade.status == "DONE" ? "UnFinalized" : "Finalize"}>
+          {grade.status == "DONE" ? (
+            <NotificationOutlined onClick={() => hanlemarkUnFinalize(grade)} />
+          ) : (
+            <SoundOutlined
+              onClick={() => handleMarkFinalize(grade)}
+              style={{
+                marginLeft: "20px",
+                outline: "none",
+                cursor: "pointer",
+                color: "#23b574",
+              }}
+            />
+          )}
+        </Tooltip>
+      </>
+    ),
     width: "15%",
     dataIndex: grade.label,
     key: grade.id,
   }));
 
-  return [initialValue[0], initialValue[1], ...newColumns, initialValue[2]];
+  return [
+    initialValue[0],
+    initialValue[1],
+    ...newColumns,
+    initialValue[2],
+    initialValue[3],
+  ];
 };
 
 const flattenGradeTypes = (grades: GradeType[]): GradeType[] => {
