@@ -1,12 +1,14 @@
 import React, { useEffect, useReducer, useRef, useState } from "react";
-import { Button, Modal, Switch, Table, Upload, message } from "antd";
+import { Button, Modal, Skeleton, Switch, Table, Upload, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
 import {
   downloadGradeTemplate,
   downloadGradeTypeTemplate,
   finalizeGradeType,
+  getFullArrayGradeTypeData,
   getFullGradeData,
+  getIDGradeStructure,
   uploadGradeType,
   uploadStudentGrade,
 } from "services/gradeService";
@@ -18,6 +20,18 @@ import {
 import TreeGradeStructure from "./FormCreateGrade/TreeGradeStructure";
 import { DownloadOutlined, ExportOutlined } from "@ant-design/icons";
 import cloneDeep from "lodash/cloneDeep";
+import { ClassEndpointWTID } from "services/classService";
+import useSWR, { useSWRConfig } from "swr";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getClassOVReducer,
+  removeClassOV,
+  setAlert,
+  setTabActive,
+} from "@redux/reducer";
+import { ClassOVEndpoint } from "services/classOVService";
+import { removeClassOptions } from "helpers";
+import { useNavigate } from "react-router-dom";
 
 interface DataType {
   key: React.Key;
@@ -60,14 +74,14 @@ const InitialColumns: ColumnsType<DataType> = [
 
 //testData
 const data: DataType[] = [];
-for (let i = 0; i < 100; i++) {
-  data.push({
-    key: i,
-    name: `Edward ${i}`,
-    age: 32,
-    address: `London Park no. ${i}`,
-  });
-}
+// for (let i = 0; i < 100; i++) {
+//   data.push({
+//     key: i,
+//     name: `Edward ${i}`,
+//     age: 32,
+//     address: `London Park no. ${i}`,
+//   });
+// }
 
 const FIXED_COLUMN = 8;
 
@@ -75,15 +89,126 @@ const PointPage = ({ courseId }: any) => {
   const [fixedTop, setFixedTop] = useState(true);
   const [isModalCreateGradeOpen, setIsModalCreateGradeOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
-  const [gradeStructureId, setGradeStructureId] = useState<any>("");
   const [isModalViewGradeOpen, setIsModalViewGradeOpen] = useState(false);
   const [widthOfScrollX, setWidthOfScrollX] = useState("162.5%");
-  const [fullGradeStructure, setFullGradeStructure] = useState<GradeType[]>([]);
   const [isLoadingUploadStudentGrade, setIsLoadingUploadStudentGrade] =
     useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [gradeColumns, setGradeColumns] =
-    useState<ColumnsType<DataType>>(InitialColumns);
+  // const [gradeColumns, setGradeColumns] =
+  //   useState<ColumnsType<DataType>>(InitialColumns);
+  const [isLoadingPointFirstTime, setIsLoadingPointFirstTime] = useState(false);
+  const { mutate: myMutate } = useSWRConfig();
+  const classOVS = useSelector(getClassOVReducer);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const updateColumns = (newGradeTypes: GradeType[]) => {
+    const temporaryGrades = getAllGradesIntoColumns(
+      newGradeTypes,
+      InitialColumns,
+      handleUploadListGrade,
+      handleMarkFinalize,
+      hanlemarkUnFinalize,
+      hanleDownloadGradeTypeTemplate
+    );
+    const currLength = temporaryGrades.length;
+    const excess = currLength - FIXED_COLUMN;
+    const percentagePerColumn = 100 / FIXED_COLUMN;
+    const excessPercentage = percentagePerColumn * excess;
+    const totalPercentage = excessPercentage + 100;
+    setWidthOfScrollX(totalPercentage + "%");
+    return temporaryGrades;
+  };
+  //ForSWR:
+  // const refFirstTime = useRef<any>({});
+  // refFirstTime.current[`${courseId}`] = 0;
+  let {
+    data: fullGradeStructure,
+    mutate,
+    isLoading,
+  } = useSWR(
+    ClassEndpointWTID + courseId + "#points",
+    () => getFullArrayGradeTypeData(courseId),
+    {
+      onSuccess: (data: GradeType[]): GradeType[] => {
+        // refFirstTime.current[`${courseId}`]++;
+        // console.log("success current: " + refFirstTime.current);
+        updateColumns(data);
+        return data;
+      },
+      onError: (data) => {
+        // console.log("fail current: " + refFirstTime.current);
+        // refFirstTime.current[`${courseId}`]++;
+        // console.log("Failed lola");
+        if (data.response.data.message == "not found course") {
+          dispatch(removeClassOV({ id: courseId }));
+          myMutate(
+            ClassOVEndpoint,
+            removeClassOptions(courseId, classOVS).optimisticData,
+            false
+          );
+          dispatch(setTabActive("home"));
+          navigate("/home");
+          dispatch(
+            setAlert({
+              type: "info",
+              value: "This class has not been found!",
+            })
+          );
+        }
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (!isLoading) {
+      setIsLoadingPointFirstTime(false);
+    }
+  }, [isLoading]);
+
+  if (fullGradeStructure == undefined) {
+    fullGradeStructure = [];
+  }
+
+  //For grade structureID:
+  let { data: gradeColumns, mutate: mutateGradeColumn } = useSWR(
+    ClassEndpointWTID + courseId + "#points#GradeStructureID",
+    () => {
+      if (fullGradeStructure == undefined) {
+        fullGradeStructure = [];
+      }
+      return updateColumns(fullGradeStructure);
+    },
+    {
+      onSuccess: (data: ColumnsType<DataType>) => {
+        return data;
+      },
+    }
+  );
+
+  const setGradeColumns = (temporaryGrades: GradeType[]) => {
+    mutateGradeColumn(updateColumns(temporaryGrades));
+  };
+
+  //For grade structureID:
+  let { data: gradeStructureId, mutate: mutateGradeStructureID } = useSWR(
+    ClassEndpointWTID + courseId + "#points#GradeStructureID",
+    () => getIDGradeStructure(courseId),
+    {
+      onSuccess: (data) => {
+        return data;
+      },
+    }
+  );
+
+  if (gradeStructureId == undefined) {
+    gradeStructureId = "";
+  }
+  // if (refFirstTime.current[`${courseId}`] == 1) {
+  //   console.log("RESET" + courseId);
+  //   refFirstTime.current[`${courseId}`]++;
+  //   setIsLoadingPointFirstTime(false);
+  // }
+
   const handleCancelCreateGrade = () => {
     setIsModalCreateGradeOpen(false);
   };
@@ -100,7 +225,7 @@ const PointPage = ({ courseId }: any) => {
       bodyFormData.append("file", info.file.originFileObj);
       uploadGradeType(grade.id, bodyFormData)
         .then((res: any) => {
-          console.log("UPLOA RES:", res);
+          // console.log("UPLOA RES:", res);
           messageApi.open({
             key: "upload_grade_type_template",
             type: "success",
@@ -132,7 +257,7 @@ const PointPage = ({ courseId }: any) => {
     });
     finalizeGradeType(grade.id, "DONE")
       .then(() => {
-        console.log("BEFORE FUNCTION RUUN: ", fullGradeStructure);
+        // console.log("BEFORE FUNCTION RUUN: ", fullGradeStructure);
         const newResultAfterUpdate = updateGradeStatusById(
           cloneDeep(fullGradeStructure),
           grade.id,
@@ -170,7 +295,7 @@ const PointPage = ({ courseId }: any) => {
     });
     finalizeGradeType(grade.id, "CREATED")
       .then(() => {
-        console.log("BEFORE FUNCTION RUUN: ", fullGradeStructure);
+        // console.log("BEFORE FUNCTION RUUN: ", fullGradeStructure);
         const newResultAfterUpdate = updateGradeStatusById(
           cloneDeep(fullGradeStructure),
           grade.id,
@@ -224,79 +349,38 @@ const PointPage = ({ courseId }: any) => {
       .finally(() => {});
   };
 
-  const updateColumns = (newGradeTypes: GradeType[]) => {
-    const temporaryGrades = getAllGradesIntoColumns(
-      newGradeTypes,
-      InitialColumns,
-      handleUploadListGrade,
-      handleMarkFinalize,
-      hanlemarkUnFinalize,
-      hanleDownloadGradeTypeTemplate
-    );
-    const currLength = temporaryGrades.length;
-    const excess = currLength - FIXED_COLUMN;
-    const percentagePerColumn = 100 / FIXED_COLUMN;
-    const excessPercentage = percentagePerColumn * excess;
-    const totalPercentage = excessPercentage + 100;
-    setWidthOfScrollX(totalPercentage + "%");
-    setGradeColumns(temporaryGrades);
+  const setFullGradeStructure = (newGradeStructure: GradeType[]) => {
+    mutate(newGradeStructure);
   };
 
   const FetchAllGradesFunction = () => {
-    messageApi.info("Loading new grades...");
-    getFullGradeData(courseId)
-      .then((resGetFull: ReturnCreateGrade) => {
-        console.log("Data return, ", resGetFull.gradeTypes);
-        setFullGradeStructure(resGetFull.gradeTypes);
-        setGradeStructureId(resGetFull.id);
-        console.log("gradestrucure id: ", resGetFull.id);
-        updateColumns(resGetFull.gradeTypes);
-        messageApi.success("Load structure successfully");
-      })
-      .catch((err: any) => {
-        console.log("PointPage: Failed to load grade structure", err);
-        messageApi.error("Fail to load grade structure");
-      });
+    messageApi.info("New info will be updated");
+    mutate();
+    // getFullGradeData(courseId)
+    //   .then((resGetFull: ReturnCreateGrade) => {
+    //     console.log("Data return, ", resGetFull.gradeTypes);
+    //     setFullGradeStructure(resGetFull.gradeTypes);
+    //     setGradeStructureId(resGetFull.id);
+    //     console.log("gradestrucure id: ", resGetFull.id);
+    //     updateColumns(resGetFull.gradeTypes);
+    //     messageApi.success("Load structure successfully");
+    //   })
+    //   .catch((err: any) => {
+    //     console.log("PointPage: Failed to load grade structure", err);
+    //     messageApi.error("Fail to load grade structure");
+    //   });
   };
 
   const timeRender = useRef(0);
   useEffect(() => {
     timeRender.current++;
     if (timeRender.current == 1) {
-      FetchAllGradesFunction();
+      // FetchAllGradesFunction();
     }
   }, []);
 
   const handleCancelViewGrade = () => {
     setIsModalViewGradeOpen(false);
-  };
-
-  const importFileXLSX = (info: any) => {
-    // setIsLoadingUploadStudentGrade(true);
-    // if (info.file.status !== "uploading") {
-    //   const bodyFormData = new FormData();
-    //   bodyFormData.append("file", info.file.originFileObj);
-    //   uploadStudentGrade(courseId, bodyFormData)
-    //     .then((res: any) => {
-    //       messageApi.success("Successfully uploaded");
-    //       const tempStudentInClass: any = [];
-    //       res.forEach((student: any) => {
-    //         tempStudentInClass.push({
-    //           key: student.studentId,
-    //           name: student.fullname,
-    //           studentId: student.studentId,
-    //         });
-    //       });
-    //       setStudentsInClass(tempStudentInClass);
-    //     })
-    //     .catch((err : any) => {
-    //       messageApi.error("Upload failed");
-    //       console.log("PointPage: Failed to upload", err);
-    //     })
-    //     .finally(() => {
-    //       setIsLoadingUploadStudentGrade(false);
-    //     });
-    // }
   };
 
   const handleDownloadGradeTemplate = () => {
@@ -316,41 +400,44 @@ const PointPage = ({ courseId }: any) => {
 
   return (
     <>
-      <div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-            <Button
-              type="primary"
-              style={{ outline: "none" }}
-              onClick={() => setIsModalCreateGradeOpen(true)}
-            >
-              Create new Grade Structure
-            </Button>
-            {/* <Button
+      {isLoadingPointFirstTime ? (
+        <Skeleton active />
+      ) : (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <Button
+                type="primary"
+                style={{ outline: "none" }}
+                onClick={() => setIsModalCreateGradeOpen(true)}
+              >
+                Create new Grade Structure
+              </Button>
+              {/* <Button
               type="primary"
               style={{ background: "#ffc069", outline: "none", color: "#000" }}
             >
               Update Grade Structure
             </Button> */}
-            <Button
-              style={{ outline: "none" }}
-              onClick={() => setIsModalViewGradeOpen(true)}
-            >
-              View Grade Structure
-            </Button>
-          </div>
+              <Button
+                style={{ outline: "none" }}
+                onClick={() => setIsModalViewGradeOpen(true)}
+              >
+                View Grade Structure
+              </Button>
+            </div>
 
-          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-            <Button
-              loading={isDownloading}
-              icon={<DownloadOutlined />}
-              style={{ outline: "none" }}
-              type="primary"
-              onClick={() => handleDownloadGradeTemplate()}
-            >
-              Download board grade
-            </Button>
-            {/* <Upload
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <Button
+                loading={isDownloading}
+                icon={<DownloadOutlined />}
+                style={{ outline: "none" }}
+                type="primary"
+                onClick={() => handleDownloadGradeTemplate()}
+              >
+                Download board grade
+              </Button>
+              {/* <Upload
               action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
               onChange={(info) => importFileXLSX(info)}
               showUploadList={false}
@@ -367,36 +454,37 @@ const PointPage = ({ courseId }: any) => {
                 Import file xlsx
               </Button>
             </Upload> */}
+            </div>
           </div>
+          <Table
+            columns={gradeColumns}
+            dataSource={data}
+            scroll={{ x: widthOfScrollX }}
+            summary={() => (
+              <Table.Summary fixed={fixedTop ? "top" : "bottom"}>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={1}>
+                    <Switch
+                      checkedChildren="Fixed Top"
+                      unCheckedChildren="Fixed Top"
+                      checked={fixedTop}
+                      onChange={() => {
+                        setFixedTop(!fixedTop);
+                      }}
+                    />
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2} colSpan={8}>
+                    {/* Points */}
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={10}></Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )}
+            // antd site header height
+            sticky={{ offsetHeader: 64 }}
+          />
         </div>
-        <Table
-          columns={gradeColumns}
-          dataSource={data}
-          scroll={{ x: widthOfScrollX }}
-          summary={() => (
-            <Table.Summary fixed={fixedTop ? "top" : "bottom"}>
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={1}>
-                  <Switch
-                    checkedChildren="Fixed Top"
-                    unCheckedChildren="Fixed Top"
-                    checked={fixedTop}
-                    onChange={() => {
-                      setFixedTop(!fixedTop);
-                    }}
-                  />
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={2} colSpan={8}>
-                  {/* Points */}
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={10}></Table.Summary.Cell>
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-          // antd site header height
-          sticky={{ offsetHeader: 64 }}
-        />
-      </div>
+      )}
       <Modal
         title="Create Grade Structure"
         open={isModalCreateGradeOpen}

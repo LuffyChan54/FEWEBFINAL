@@ -35,6 +35,25 @@ export const getFullGradeData = async (
   return data;
 };
 
+export const getIDGradeStructure = async (courseId: any) => {
+  const res = await gradeClient.get(
+    GradeEndpointWTID + "?courseId=" + courseId + "&take&skip"
+  );
+  const data: ReturnCreateGrade = res.data as ReturnCreateGrade;
+  return data.id;
+};
+
+export const getFullArrayGradeTypeData = async (
+  courseId: any
+): Promise<GradeType[]> => {
+  const res = await gradeClient.get(
+    GradeEndpointWTID + "?courseId=" + courseId + "&take&skip"
+  );
+  const data: ReturnCreateGrade = res.data as ReturnCreateGrade;
+  data.gradeTypes = await getSubGrades(data.gradeTypes);
+  return data.gradeTypes;
+};
+
 const getSubGrades = async (grades: GradeType[]): Promise<GradeType[]> => {
   const processedGrades = await Promise.all(
     grades.map(async (grade) => {

@@ -8,8 +8,10 @@ import {
 import {
   getAuthReducer,
   getClassOVReducer,
+  getHashInfo,
   removeClassOV,
   setAlert,
+  setHashInfo,
   setTabActive,
 } from "@redux/reducer";
 import { Tabs, TabsProps, message } from "antd";
@@ -27,7 +29,13 @@ import {
 } from "helpers/remoteOptions/ChangeRoleOptions.";
 import { memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { redirect, useNavigate, useParams } from "react-router-dom";
+import {
+  redirect,
+  useLocation,
+  useNavigate,
+  useNavigation,
+  useParams,
+} from "react-router-dom";
 import { toast } from "react-toastify";
 import { ClassOVEndpoint } from "services/classOVService";
 import {
@@ -78,6 +86,29 @@ const ClassPage = memo(() => {
       }
     },
   });
+
+  const location = useLocation();
+
+  const hashInfoValue = useSelector(getHashInfo);
+
+  // Get the current hash
+  const currentHash = location.hash;
+  let activeKeyTab = hashInfoValue;
+  let hashToKey = hashInfoValue;
+  if (currentHash != "" && currentHash) {
+    hashToKey = currentHash.slice(1);
+    if (hashToKey != hashInfoValue) {
+      activeKeyTab = hashToKey;
+    }
+  } else {
+    const pureHref = window.location.href.split("#")[0];
+    window.location.href = pureHref + "#" + hashInfoValue;
+  }
+  useEffect(() => {
+    if (hashToKey != hashInfoValue) {
+      dispatch(setHashInfo(hashToKey));
+    }
+  }, []);
 
   useEffect(() => {
     dispatch(setTabActive(courseId));
@@ -212,14 +243,16 @@ const ClassPage = memo(() => {
       key: "points",
       children: (
         <>
-          <PointPage courseId={courseId} />
+          <PointPage key={courseId} courseId={courseId} />
         </>
       ),
     },
   ];
 
   const onChange = (key: string) => {
-    // console.log(key);
+    const pureHref = window.location.href.split("#")[0];
+    window.location.href = pureHref + "#" + key;
+    dispatch(setHashInfo(key));
   };
 
   const reloadClassInfo = () => {
@@ -242,7 +275,7 @@ const ClassPage = memo(() => {
         />
       )}
 
-      <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+      <Tabs defaultActiveKey={activeKeyTab} items={items} onChange={onChange} />
     </>
   );
 });
