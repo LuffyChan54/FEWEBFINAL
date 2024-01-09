@@ -1,13 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { sortBy } from "lodash";
-import { UserStudentCard } from "types";
+import { ClassInfoType, UserStudentCard } from "types";
 
 interface InitialState {
   users: UserStudentCard[];
+  classes: ClassInfoType[];
 }
 
 const initialState: InitialState = {
   users: [],
+  classes: [],
 };
 
 export const adminSlice = createSlice({
@@ -17,6 +19,7 @@ export const adminSlice = createSlice({
     getUsersAction: (state, action) => {
       const payload = action.payload;
       return {
+        ...state,
         users: payload,
       };
     },
@@ -28,7 +31,7 @@ export const adminSlice = createSlice({
         }
         return user;
       });
-      return { users };
+      return { ...state, users };
     },
     importUserAction: (state, action) => {
       const payload = action.payload;
@@ -47,13 +50,50 @@ export const adminSlice = createSlice({
         };
       }) as UserStudentCard[];
 
-      return { users };
+      return {
+        ...state,
+        users,
+      };
+    },
+    getClassesAction: (state, action) => {
+      return {
+        ...state,
+        classes: action.payload,
+      };
+    },
+    toggleActiveClassAction: (state, action) => {
+      const payload = action.payload;
+      console.log(payload);
+      const classes = state.classes.map((_class) => {
+        if (_class.id === payload.id) {
+          return {
+            ..._class,
+            ...payload,
+          };
+        }
+        return _class;
+      });
+      return { ...state, classes };
+    },
+    createClassAction: (state, action) => {
+      const payload = action.payload;
+      const classes = [payload, ...state.classes];
+      return {
+        ...state,
+        classes,
+      };
     },
   },
 });
 
 // Action creators are generated for each case reducer function
 export const getAdminReducer = (state: any) => state.admin;
-export const { getUsersAction, blockUserAction, importUserAction } =
-  adminSlice.actions;
+export const {
+  getUsersAction,
+  blockUserAction,
+  importUserAction,
+  getClassesAction,
+  toggleActiveClassAction,
+  createClassAction,
+} = adminSlice.actions;
 export const adminReducer = adminSlice.reducer;

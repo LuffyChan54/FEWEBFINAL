@@ -1,5 +1,6 @@
-import { Button, Table, Tag } from "antd";
+import { Button, Dropdown, Flex, Table, Tag } from "antd";
 import { ColumnsType } from "antd/es/table";
+import { Link, useNavigate } from "react-router-dom";
 import { UserStudentCard } from "types";
 
 interface DataType {
@@ -15,10 +16,13 @@ interface DataType {
 const UserList = ({
   users,
   handleActive,
+  isTableLoading,
 }: {
   users: UserStudentCard[];
   handleActive: (userId: string, isActive: boolean) => void;
+  isTableLoading: boolean;
 }) => {
+  const navigate = useNavigate();
   const header: ColumnsType<DataType> = [
     {
       title: "Student ID",
@@ -72,15 +76,29 @@ const UserList = ({
       dataIndex: "action",
       key: "action",
       render: (_, { blocked, key }) => {
-        return blocked ? (
-          <Button type="primary" ghost onClick={() => handleActive(key, false)}>
+        const blockedBtn = blocked ? (
+          <Button
+            type="primary"
+            ghost
+            onClick={(e) => {
+              e.stopPropagation();
+              handleActive(key, false);
+            }}
+          >
             Active
           </Button>
         ) : (
-          <Button danger onClick={() => handleActive(key, true)}>
-            block
+          <Button
+            danger
+            onClick={(e) => {
+              e.stopPropagation();
+              handleActive(key, true);
+            }}
+          >
+            Block
           </Button>
         );
+        return blockedBtn;
       },
     },
   ];
@@ -93,7 +111,17 @@ const UserList = ({
     blocked: user.blocked || false,
     key: user.userId,
   }));
-  return <Table dataSource={dataSource} columns={header} />;
+  return (
+    <Table
+      onRow={(row) => ({
+        onClick: () => navigate(`/admin/course?userId=${row.key}`),
+      })}
+      style={{ cursor: "pointer" }}
+      loading={isTableLoading}
+      dataSource={dataSource}
+      columns={header}
+    />
+  );
 };
 
 export default UserList;

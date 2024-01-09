@@ -1,10 +1,15 @@
-import { LogoutOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  LogoutOutlined,
+  MailOutlined,
+  UserOutlined,
+  UserSwitchOutlined,
+} from "@ant-design/icons";
 import { getAuthReducer, logout } from "@redux/reducer";
 import { Badge, Dropdown, Space, Avatar, Spin } from "antd";
 
 import { memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import * as userService from "services/userService";
 
 const MyUser = memo(() => {
@@ -12,6 +17,7 @@ const MyUser = memo(() => {
   const countVerifyEmail = user.emailVerified ? 0 : 1; //0: TRUE , 1: FALSE
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoadingLogout, setIsLoadingLogout] = useState(false);
   const handleLogout = () => {
     setIsLoadingLogout(true);
@@ -52,6 +58,15 @@ const MyUser = memo(() => {
       onClick: () => {
         navigate("/home/verify_email");
       },
+    },
+    {
+      label: location.pathname.includes("admin") ? "User Mode" : "Admin Mode",
+      key: "admin",
+      icon: <UserSwitchOutlined />,
+      onClick: () =>
+        location.pathname.includes("admin")
+          ? navigate("/home")
+          : navigate("/admin"),
     },
     {
       label: "Log out",

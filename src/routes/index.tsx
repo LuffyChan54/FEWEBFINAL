@@ -11,6 +11,11 @@ import ClassPage from "pages/classPage/ClassPage";
 import TemporaryPage from "pages/temporary/TemporaryPage";
 import UserInfo from "pages/userInfo/UserInfo";
 import AdminPage from "pages/adminPage/adminPage";
+import AdminClassPage from "pages/adminPage/adminClassPage";
+import AdminLayout from "layouts/globalLayout/AdminLayout";
+import ProtectRoute, {
+  NavigateToAdminRoute,
+} from "components/auth/protectRouter";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -69,15 +74,19 @@ export const routes = createBrowserRouter([
     ],
   },
   {
-    element: <ProtectRouter />,
+    element: <NavigateToAdminRoute />,
     children: [
       {
-        path: "/admin",
-        element: <HomePage />,
+        path: "/",
+        element: <AdminLayout />,
         children: [
           {
-            path: "/admin/home",
+            path: "/admin",
             element: <AdminPage />,
+          },
+          {
+            path: "/admin/course",
+            element: <AdminClassPage />,
           },
         ],
       },
