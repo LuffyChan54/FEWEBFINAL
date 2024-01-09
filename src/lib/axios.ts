@@ -24,7 +24,7 @@ export const gradeClient = axios.create({
   baseURL: import.meta.env.VITE_GRADE_URL,
 });
 
-const getRefreshToken = async (token: string) => {
+export const getRefreshToken = async (token: string) => {
   const res = await axios.post(
     `${import.meta.env.VITE_AUTH_CLIENT}/api/auth/refresh-token`,
     {
