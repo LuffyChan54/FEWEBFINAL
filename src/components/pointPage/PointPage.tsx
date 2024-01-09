@@ -5,14 +5,19 @@ import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
 import {
   downloadGradeTemplate,
   downloadGradeTypeTemplate,
+  finalizeGradeType,
   getFullGradeData,
   uploadGradeType,
   uploadStudentGrade,
 } from "services/gradeService";
 import { GradeType, ReturnCreateGrade } from "types/grade/returnCreateGrade";
-import { getAllGradesIntoColumns } from "utils/getAllGrades";
+import {
+  getAllGradesIntoColumns,
+  updateGradeStatusById,
+} from "utils/getAllGrades";
 import TreeGradeStructure from "./FormCreateGrade/TreeGradeStructure";
 import { DownloadOutlined, ExportOutlined } from "@ant-design/icons";
+import cloneDeep from "lodash/cloneDeep";
 
 interface DataType {
   key: React.Key;
@@ -84,15 +89,15 @@ const PointPage = ({ courseId }: any) => {
   };
 
   const handleUploadListGrade = (info: any, grade: GradeType) => {
+    messageApi.open({
+      key: "upload_grade_type_template",
+      type: "loading",
+      content: "Uploading grade list for " + grade.label,
+      duration: 0,
+    });
     if (info.file.status !== "uploading") {
       const bodyFormData = new FormData();
       bodyFormData.append("file", info.file.originFileObj);
-      messageApi.open({
-        key: "upload_grade_type_template",
-        type: "loading",
-        content: "Uploading grade list for " + grade.label,
-        duration: 0,
-      });
       uploadGradeType(grade.id, bodyFormData)
         .then((res: any) => {
           console.log("UPLOA RES:", res);
@@ -115,9 +120,82 @@ const PointPage = ({ courseId }: any) => {
         .finally(() => {});
     }
   };
-
-  const handleMarkFinalize = (grade: GradeType) => {};
-  const hanlemarkUnFinalize = (grade: GradeType) => {};
+  const handleMarkFinalize = (
+    grade: GradeType,
+    fullGradeStructure: GradeType[]
+  ) => {
+    messageApi.open({
+      key: "finalize_grade_type_template",
+      type: "loading",
+      content: "Finalizing grade " + grade.label,
+      duration: 0,
+    });
+    finalizeGradeType(grade.id, "DONE")
+      .then(() => {
+        console.log("BEFORE FUNCTION RUUN: ", fullGradeStructure);
+        const newResultAfterUpdate = updateGradeStatusById(
+          cloneDeep(fullGradeStructure),
+          grade.id,
+          "DONE"
+        );
+        updateColumns(newResultAfterUpdate);
+        setFullGradeStructure(newResultAfterUpdate);
+        messageApi.open({
+          key: "finalize_grade_type_template",
+          type: "success",
+          content: "Finalized Successfully",
+          duration: 2,
+        });
+      })
+      .catch((err) => {
+        console.log("PointPage: failed to finalize grade ", err);
+        messageApi.open({
+          key: "finalize_grade_type_template",
+          type: "error",
+          content: "Failed to finalize the grade",
+          duration: 2,
+        });
+      })
+      .finally(() => {});
+  };
+  const hanlemarkUnFinalize = (
+    grade: GradeType,
+    fullGradeStructure: GradeType[]
+  ) => {
+    messageApi.open({
+      key: "unfinalize_grade_type_template",
+      type: "loading",
+      content: "UnFinalizing grade " + grade.label,
+      duration: 0,
+    });
+    finalizeGradeType(grade.id, "CREATED")
+      .then(() => {
+        console.log("BEFORE FUNCTION RUUN: ", fullGradeStructure);
+        const newResultAfterUpdate = updateGradeStatusById(
+          cloneDeep(fullGradeStructure),
+          grade.id,
+          "CREATED"
+        );
+        updateColumns(newResultAfterUpdate);
+        setFullGradeStructure(newResultAfterUpdate);
+        messageApi.open({
+          key: "unfinalize_grade_type_template",
+          type: "success",
+          content: "UnFinalized Successfully",
+          duration: 2,
+        });
+      })
+      .catch((err) => {
+        console.log("PointPage: failed to unfinalize grade ", err);
+        messageApi.open({
+          key: "unfinalize_grade_type_template",
+          type: "error",
+          content: "Failed to unfinalize the grade",
+          duration: 2,
+        });
+      })
+      .finally(() => {});
+  };
   const hanleDownloadGradeTypeTemplate = (grade: GradeType) => {
     messageApi.open({
       key: "download_grade_type_template",
@@ -168,6 +246,7 @@ const PointPage = ({ courseId }: any) => {
     messageApi.info("Loading new grades...");
     getFullGradeData(courseId)
       .then((resGetFull: ReturnCreateGrade) => {
+        console.log("Data return, ", resGetFull.gradeTypes);
         setFullGradeStructure(resGetFull.gradeTypes);
         setGradeStructureId(resGetFull.id);
         console.log("gradestrucure id: ", resGetFull.id);

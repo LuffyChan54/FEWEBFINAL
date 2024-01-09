@@ -56,10 +56,17 @@ export const getAllGradesIntoColumns = (
 
         <Tooltip title={grade.status == "DONE" ? "UnFinalized" : "Finalize"}>
           {grade.status == "DONE" ? (
-            <NotificationOutlined onClick={() => hanlemarkUnFinalize(grade)} />
+            <NotificationOutlined
+              style={{
+                marginLeft: "20px",
+                outline: "none",
+                cursor: "pointer",
+              }}
+              onClick={() => hanlemarkUnFinalize(grade, gradeInRecursion)}
+            />
           ) : (
             <SoundOutlined
-              onClick={() => handleMarkFinalize(grade)}
+              onClick={() => handleMarkFinalize(grade, gradeInRecursion)}
               style={{
                 marginLeft: "20px",
                 outline: "none",
@@ -210,6 +217,30 @@ export const updateGradeById = (
         grade.gradeSubTypes,
         gradeIdToUpdate,
         updatedInfo
+      );
+    }
+
+    return grade;
+  });
+};
+
+export const updateGradeStatusById = (
+  grades: GradeType[],
+  gradeIdToUpdate: any,
+  status: any
+): GradeType[] => {
+  return grades.map((grade) => {
+    if (grade.id === gradeIdToUpdate) {
+      grade.status = status;
+      return cloneDeep(grade);
+    }
+
+    if (grade.gradeSubTypes && grade.gradeSubTypes.length > 0) {
+      // Recursively update subgrades
+      grade.gradeSubTypes = updateGradeStatusById(
+        grade.gradeSubTypes,
+        gradeIdToUpdate,
+        status
       );
     }
 

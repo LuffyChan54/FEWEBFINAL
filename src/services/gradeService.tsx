@@ -134,3 +134,13 @@ export const uploadGradeType = async (gradeTypeID: any, formData: any) => {
   );
   return res.data;
 };
+
+export const finalizeGradeType = async (gradeTypeID: any, status: any) => {
+  const res = await gradeClient.put(
+    GradeEndpointWTID + "/type/" + gradeTypeID + "/finalize",
+    {
+      status: status,
+    }
+  );
+  return res.data;
+};
