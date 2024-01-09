@@ -1,5 +1,6 @@
 import { Button, Dropdown, Flex, Table, Tag } from "antd";
 import { ColumnsType } from "antd/es/table";
+import { sortBy } from "lodash";
 import { Link, useNavigate } from "react-router-dom";
 import { UserStudentCard } from "types";
 
@@ -61,6 +62,13 @@ const UserList = ({
       title: "Blocked",
       dataIndex: "blocked",
       key: "blocked",
+      filters: [
+        { text: "blocked", value: true },
+        { text: "active", value: false },
+      ],
+      filterMode: "tree",
+      filterSearch: true,
+      onFilter: (value, record) => record.blocked === value.valueOf(),
       render: (_, { blocked }) => {
         const color = blocked === true ? "volcano" : "green";
         const key = blocked === true ? "Blocked" : "Active";
@@ -118,7 +126,7 @@ const UserList = ({
       })}
       style={{ cursor: "pointer" }}
       loading={isTableLoading}
-      dataSource={dataSource}
+      dataSource={sortBy(dataSource, "blocked")}
       columns={header}
     />
   );

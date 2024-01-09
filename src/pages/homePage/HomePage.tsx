@@ -32,6 +32,7 @@ import {
   joinClassOV,
 } from "services/classOVService";
 import { addClassOptions, removeClassOptions } from "helpers";
+import { sortBy } from "lodash";
 
 interface VirtualInputRefType {
   input: {
@@ -127,7 +128,7 @@ const HomePage = memo(() => {
         setIsFetchingClassesFirstTime(false);
       }
     }
-  });
+  }, []);
 
   useEffect(() => {
     if (alertValue.value) {
@@ -326,40 +327,42 @@ const HomePage = memo(() => {
           gap="50px"
           // style={{ background: "#f0f2f5", padding: "20px" }}
         >
-          {classOVs?.map((el: ClassOverviewType) => {
-            // preload(ClassEndpointWTID + el.code, () => getClassDetail(el.code));
-            return (
-              <Col span={7} key={el.id}>
-                <Card
-                  extra={
-                    el.isActive ? (
-                      <Alert message="Active" type="success" showIcon />
-                    ) : (
-                      <Alert message="Inactive" type="error" showIcon />
-                    )
-                  }
-                  title={el.name}
-                  bordered={false}
-                  style={{
-                    cursor: "pointer",
-                  }}
-                  onClick={() => handleCardClick(el.id, el.isActive)}
-                >
-                  <h6 style={{ marginBottom: "15px" }}>{el.desc}</h6>
-                  <p style={{ marginBottom: "2px" }}>
-                    Joined At: {el.profile.joinedAt?.split("T")[0]}
-                  </p>
-                  <p style={{ marginBottom: "2px" }}>
-                    Your role: {el.profile.role}
-                  </p>
-                  <p style={{ marginBottom: "2px" }}>
-                    Course created at: {el.createdAt.split("T")[0]}
-                  </p>
-                  <i>Host by: {el.host.name}</i>
-                </Card>
-              </Col>
-            );
-          })}
+          {sortBy(classOVs || [], [({ isActive }) => !isActive]).map(
+            (el: ClassOverviewType) => {
+              // preload(ClassEndpointWTID + el.code, () => getClassDetail(el.code));
+              return (
+                <Col span={7} key={el.id}>
+                  <Card
+                    extra={
+                      el.isActive ? (
+                        <Alert message="Active" type="success" showIcon />
+                      ) : (
+                        <Alert message="Inactive" type="error" showIcon />
+                      )
+                    }
+                    title={el.name}
+                    bordered={false}
+                    style={{
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleCardClick(el.id, el.isActive)}
+                  >
+                    <h6 style={{ marginBottom: "15px" }}>{el.desc}</h6>
+                    <p style={{ marginBottom: "2px" }}>
+                      Joined At: {el.profile.joinedAt?.split("T")[0]}
+                    </p>
+                    <p style={{ marginBottom: "2px" }}>
+                      Your role: {el.profile.role}
+                    </p>
+                    <p style={{ marginBottom: "2px" }}>
+                      Course created at: {el.createdAt.split("T")[0]}
+                    </p>
+                    <i>Host by: {el.host.name}</i>
+                  </Card>
+                </Col>
+              );
+            }
+          )}
         </Flex>
       )}
     </div>

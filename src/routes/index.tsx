@@ -16,6 +16,7 @@ import AdminLayout from "layouts/globalLayout/AdminLayout";
 import ProtectRoute, {
   NavigateToAdminRoute,
 } from "components/auth/protectRouter";
+import Unauthorized from "pages/errorPage/403";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -95,5 +96,9 @@ export const routes = createBrowserRouter([
   {
     path: "/course/attendee",
     element: <TemporaryPage />,
+  },
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />,
   },
 ]);

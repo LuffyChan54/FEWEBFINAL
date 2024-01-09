@@ -35,7 +35,7 @@ export const NavigateToAdminRoute = () => {
   return !isTokenStillValid(token.expiresTime) ? (
     <Navigate to="/auth" state={{ from: location }} replace />
   ) : !isAdmin ? (
-    <Navigate to={"/home"} state={{ from: location }} replace />
+    <Navigate to={"/unauthorized"} state={{ from: location }} replace />
   ) : (
     <Outlet />
   );
