@@ -10,6 +10,7 @@ import VerifyEmailPage from "pages/verifyEmailPage/VerifyEmailPage";
 import ClassPage from "pages/classPage/ClassPage";
 import TemporaryPage from "pages/temporary/TemporaryPage";
 import UserInfo from "pages/userInfo/UserInfo";
+import AdminPage from "pages/adminPage/adminPage";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -62,6 +63,21 @@ export const routes = createBrowserRouter([
           {
             path: "/home/course/:courseId",
             element: <ClassPage />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    element: <ProtectRouter />,
+    children: [
+      {
+        path: "/admin",
+        element: <HomePage />,
+        children: [
+          {
+            path: "/admin/home",
+            element: <AdminPage />,
           },
         ],
       },
