@@ -96,12 +96,16 @@ const PointPage = ({ courseId }: any) => {
   const [isDownloading, setIsDownloading] = useState(false);
   // const [gradeColumns, setGradeColumns] =
   //   useState<ColumnsType<DataType>>(InitialColumns);
-  const [isLoadingPointFirstTime, setIsLoadingPointFirstTime] = useState(false);
+  const [isLoadingPointFirstTime, setIsLoadingPointFirstTime] = useState(true);
   const { mutate: myMutate } = useSWRConfig();
   const classOVS = useSelector(getClassOVReducer);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const updateColumns = (newGradeTypes: GradeType[]) => {
+  const updateColumns = (newGradeTypes: GradeType[] | undefined) => {
+    if (newGradeTypes == undefined) {
+      return InitialColumns;
+    }
+
     const temporaryGrades = getAllGradesIntoColumns(
       newGradeTypes,
       InitialColumns,
@@ -119,8 +123,10 @@ const PointPage = ({ courseId }: any) => {
     return temporaryGrades;
   };
   //ForSWR:
-  // const refFirstTime = useRef<any>({});
-  // refFirstTime.current[`${courseId}`] = 0;
+
+  // const [temporaryGradeFull, setTemporaryGradeFull] = useState<GradeType[]>([]);
+
+  const refTemporaryGradeFull = useRef<GradeType[]>([]);
   let {
     data: fullGradeStructure,
     mutate,
@@ -130,15 +136,13 @@ const PointPage = ({ courseId }: any) => {
     () => getFullArrayGradeTypeData(courseId),
     {
       onSuccess: (data: GradeType[]): GradeType[] => {
-        // refFirstTime.current[`${courseId}`]++;
-        // console.log("success current: " + refFirstTime.current);
-        updateColumns(data);
+        // mutate(data);
+        // setTemporaryGradeFull(data)
+        refTemporaryGradeFull.current = data;
+        setGradeColumns(data);
         return data;
       },
       onError: (data) => {
-        // console.log("fail current: " + refFirstTime.current);
-        // refFirstTime.current[`${courseId}`]++;
-        // console.log("Failed lola");
         if (data.response.data.message == "not found course") {
           dispatch(removeClassOV({ id: courseId }));
           myMutate(
@@ -159,24 +163,15 @@ const PointPage = ({ courseId }: any) => {
     }
   );
 
-  useEffect(() => {
-    if (!isLoading) {
-      setIsLoadingPointFirstTime(false);
-    }
-  }, [isLoading]);
-
-  if (fullGradeStructure == undefined) {
-    fullGradeStructure = [];
-  }
-
   //For grade structureID:
   let { data: gradeColumns, mutate: mutateGradeColumn } = useSWR(
     ClassEndpointWTID + courseId + "#points#GradeStructureID",
     () => {
-      if (fullGradeStructure == undefined) {
-        fullGradeStructure = [];
+      if (fullGradeStructure?.length == 0) {
+        return updateColumns(refTemporaryGradeFull.current);
+      } else {
+        return updateColumns(fullGradeStructure);
       }
-      return updateColumns(fullGradeStructure);
     },
     {
       onSuccess: (data: ColumnsType<DataType>) => {
@@ -185,8 +180,31 @@ const PointPage = ({ courseId }: any) => {
     }
   );
 
+  // console.log("FULL GRADE STRUCTURE", fullGradeStructure);
+
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     setIsLoadingPointFirstTime(false);
+  //   }
+  // }, [isLoading]);
+
+  const catchFirstLoading = useRef(0);
+  if (fullGradeStructure == undefined) {
+    fullGradeStructure = [];
+    mutate([]);
+  } else {
+    if (!isLoading) {
+      catchFirstLoading.current++;
+      if (catchFirstLoading.current == 1) {
+        setIsLoadingPointFirstTime(false);
+      }
+    }
+  }
+
   const setGradeColumns = (temporaryGrades: GradeType[]) => {
-    mutateGradeColumn(updateColumns(temporaryGrades));
+    const newColumnsUpdate = updateColumns(temporaryGrades);
+    // console.log("New columns: ", newColumnsUpdate);
+    mutateGradeColumn(newColumnsUpdate);
   };
 
   //For grade structureID:

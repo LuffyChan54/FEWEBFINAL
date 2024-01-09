@@ -22,6 +22,8 @@ export const getAllGradesIntoColumns = (
   const newGradeInRecursion = cloneDeep(gradeInRecursion);
   const allGrades: GradeType[] = flattenGradeTypes(newGradeInRecursion);
 
+  // console.log("Flatten", allGrades);
+
   const newColumns = allGrades.map((grade) => ({
     title: (
       <>
@@ -94,7 +96,6 @@ export const getAllGradesIntoColumns = (
 
 const flattenGradeTypes = (grades: GradeType[]): GradeType[] => {
   let flattenedGrades: GradeType[] = [];
-  console.log(grades);
   grades.forEach((grade) => {
     grade.label =
       grade.label +
