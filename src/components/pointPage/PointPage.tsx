@@ -239,7 +239,7 @@ const PointPage = ({
     if (availableStudentGrade != undefined) {
       data.push({
         ...availableStudentGrade,
-        name: student.name,
+        name: student.fullname,
       });
     } else {
       data.push({
