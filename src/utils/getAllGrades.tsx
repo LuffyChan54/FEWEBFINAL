@@ -95,7 +95,7 @@ export const getAllGradesIntoColumns = (
       </div>
     ),
     width: "15%",
-    dataIndex: grade.label,
+    dataIndex: grade.id,
     key: grade.id,
   }));
 
@@ -108,7 +108,8 @@ export const getAllGradesIntoColumns = (
   ];
 };
 
-const flattenGradeTypes = (grades: GradeType[]): GradeType[] => {
+export const flattenGradeTypes = (grades: GradeType[]): GradeType[] => {
+  grades = cloneDeep(grades);
   let flattenedGrades: GradeType[] = [];
   grades.forEach((grade) => {
     grade.label =

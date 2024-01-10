@@ -9,11 +9,13 @@ import {
   getFullArrayGradeTypeData,
   getFullGradeData,
   getIDGradeStructure,
+  getStudentGradeForTeacher,
   uploadGradeType,
   uploadStudentGrade,
 } from "services/gradeService";
 import { GradeType, ReturnCreateGrade } from "types/grade/returnCreateGrade";
 import {
+  flattenGradeTypes,
   getAllGradesIntoColumns,
   updateGradeStatusById,
 } from "utils/getAllGrades";
@@ -33,6 +35,7 @@ import {
 import { ClassOVEndpoint } from "services/classOVService";
 import { removeClassOptions } from "helpers";
 import { useNavigate } from "react-router-dom";
+import { transformFullGradesToDataGrades } from "utils/transformGrades";
 
 interface DataType {
   key: React.Key;
@@ -148,14 +151,6 @@ const PointPage = ({
   if (StudentInCourse == null || StudentInCourse == undefined) {
     StudentInCourse = [];
   }
-  data = [];
-  StudentInCourse.forEach((student: any) => {
-    data.push({
-      key: student.studentId,
-      name: student.fullname,
-      studentId: student.studentId,
-    });
-  });
 
   // const [temporaryGradeFull, setTemporaryGradeFull] = useState<GradeType[]>([]);
 
@@ -172,6 +167,7 @@ const PointPage = ({
         // mutate(data);
         // setTemporaryGradeFull(data)
         refTemporaryGradeFull.current = data;
+        mutateStudentGrades();
         setGradeColumns(data);
         return data;
       },
@@ -196,9 +192,70 @@ const PointPage = ({
     }
   );
 
+  //STUDENT GRADE:
+  let { data: fullStudentGrades, mutate: mutateStudentGrades } = useSWR(
+    ClassEndpointWTID + courseId + "#points#fullgradeStudent",
+    async () => {
+      let tempGradeStructures: any = [];
+      if (fullGradeStructure?.length == 0) {
+        tempGradeStructures = refTemporaryGradeFull.current;
+      } else {
+        tempGradeStructures = cloneDeep(fullGradeStructure);
+      }
+      tempGradeStructures = flattenGradeTypes(tempGradeStructures);
+
+      let resultFullStudentGrade: any = {};
+      for (let i = 0; i < tempGradeStructures.length; i++) {
+        try {
+          const res = await getStudentGradeForTeacher(
+            tempGradeStructures[i].id
+          );
+          resultFullStudentGrade[`${tempGradeStructures[i].id}`] = res;
+        } catch (err: any) {
+          console.log(
+            "Failed to load grade student " + tempGradeStructures[i].label,
+            err
+          );
+        }
+      }
+      return resultFullStudentGrade;
+    },
+    {
+      onSuccess: (data: any) => {
+        return data;
+      },
+    }
+  );
+
+  //TRANSFORM OBJECT:
+
+  data = [];
+  const fullGradeStudentAfterTransform =
+    transformFullGradesToDataGrades(fullStudentGrades);
+  StudentInCourse.forEach((student: any) => {
+    const availableStudentGrade = fullGradeStudentAfterTransform.find(
+      (studentInfo: any) => studentInfo.studentId == student.studentId
+    );
+    if (availableStudentGrade != undefined) {
+      data.push({
+        ...availableStudentGrade,
+        name: student.name,
+      });
+    } else {
+      data.push({
+        key: student.studentId,
+        name: student.fullname,
+        studentId: student.studentId,
+      });
+    }
+  });
+
+  // Object.keys(fullStudentGrades).forEach(key => {
+
+  // })
   //For grade structureID:
   let { data: gradeColumns, mutate: mutateGradeColumn } = useSWR(
-    ClassEndpointWTID + courseId + "#points#GradeStructureID",
+    ClassEndpointWTID + courseId + "#points#columns",
     () => {
       if (fullGradeStructure?.length == 0) {
         return updateColumns(refTemporaryGradeFull.current);

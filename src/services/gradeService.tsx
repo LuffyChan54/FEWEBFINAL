@@ -163,3 +163,10 @@ export const finalizeGradeType = async (gradeTypeID: any, status: any) => {
   );
   return res.data;
 };
+
+export const getStudentGradeForTeacher = async (gradeTypeID: any) => {
+  const res = await gradeClient.get(
+    GradeEndpointWTID + "/type/" + gradeTypeID + "/student/grade"
+  );
+  return res.data;
+};
