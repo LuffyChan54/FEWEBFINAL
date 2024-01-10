@@ -2,6 +2,7 @@ import {
   getAlertHome,
   getAuthReducer,
   getFlags,
+  getHashInfo,
   setAlert,
   setClassOverview,
   setFlags,
@@ -229,8 +230,10 @@ const HomePage = memo(() => {
     setIsModalOpen(false);
   };
 
+  const hashInfoValue = useSelector(getHashInfo);
+
   const handleCardClick = (id: any) => {
-    navigate("/home/course/" + id);
+    navigate("/home/course/" + id + "#" + hashInfoValue);
   };
 
   const homePageElement = (

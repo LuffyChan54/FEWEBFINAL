@@ -117,6 +117,8 @@ const ClassPage = memo(() => {
 
   const { user } = useSelector(getAuthReducer);
 
+  let StudentInCourse = [];
+
   if (classDetail == undefined) {
     classDetail = {
       id: "Pending...",
@@ -129,6 +131,7 @@ const ClassPage = memo(() => {
       host: null,
     };
   } else {
+    StudentInCourse = JSON.parse(classDetail.students as string);
     if (classDetail.host.userId == user.userId) {
       if (yourRole != "ADMIN") {
         setYourRole("ADMIN");
@@ -139,6 +142,16 @@ const ClassPage = memo(() => {
       }
     }
   }
+
+  const mutateStudents = (newStudents: any) => {
+    mutate(() => {
+      const newStudentStr = JSON.stringify(newStudents);
+      return {
+        ...classDetail,
+        students: newStudentStr,
+      };
+    });
+  };
 
   const updateClassOverviewInfo = async (newClassOV: any) => {
     try {
@@ -231,6 +244,8 @@ const ClassPage = memo(() => {
           yourRole={yourRole}
           updateRoleAttendeeDirectly={updateRoleAttendeeDirectly}
           removeAttendeeDirectly={removeAttendeeDirectly}
+          StudentInCourse={StudentInCourse}
+          mutateStudents={mutateStudents}
         />
       ),
     },
@@ -243,7 +258,11 @@ const ClassPage = memo(() => {
       key: "points",
       children: (
         <>
-          <PointPage key={courseId} courseId={courseId} />
+          <PointPage
+            StudentInCourse={StudentInCourse}
+            key={courseId}
+            courseId={courseId}
+          />
         </>
       ),
     },

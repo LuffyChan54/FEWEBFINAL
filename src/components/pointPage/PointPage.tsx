@@ -32,6 +32,7 @@ import {
 import { ClassOVEndpoint } from "services/classOVService";
 import { removeClassOptions } from "helpers";
 import { useNavigate } from "react-router-dom";
+import { stubTrue } from "lodash";
 
 interface DataType {
   key: React.Key;
@@ -73,7 +74,7 @@ const InitialColumns: ColumnsType<DataType> = [
 ];
 
 //testData
-const data: DataType[] = [];
+let data: any[] = [];
 // for (let i = 0; i < 100; i++) {
 //   data.push({
 //     key: i,
@@ -85,7 +86,7 @@ const data: DataType[] = [];
 
 const FIXED_COLUMN = 8;
 
-const PointPage = ({ courseId }: any) => {
+const PointPage = ({ courseId, StudentInCourse }: any) => {
   const [fixedTop, setFixedTop] = useState(true);
   const [isModalCreateGradeOpen, setIsModalCreateGradeOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -94,6 +95,7 @@ const PointPage = ({ courseId }: any) => {
   const [isLoadingUploadStudentGrade, setIsLoadingUploadStudentGrade] =
     useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  // const [data, setData] = useState<any>([])
   // const [gradeColumns, setGradeColumns] =
   //   useState<ColumnsType<DataType>>(InitialColumns);
   const [isLoadingPointFirstTime, setIsLoadingPointFirstTime] = useState(true);
@@ -123,6 +125,15 @@ const PointPage = ({ courseId }: any) => {
     return temporaryGrades;
   };
   //ForSWR:
+
+  data = [];
+  StudentInCourse.forEach((student: any) => {
+    data.push({
+      key: student.studentId,
+      name: student.fullname,
+      studentId: student.studentId,
+    });
+  });
 
   // const [temporaryGradeFull, setTemporaryGradeFull] = useState<GradeType[]>([]);
 
@@ -374,19 +385,6 @@ const PointPage = ({ courseId }: any) => {
   const FetchAllGradesFunction = () => {
     messageApi.info("New info will be updated");
     mutate();
-    // getFullGradeData(courseId)
-    //   .then((resGetFull: ReturnCreateGrade) => {
-    //     console.log("Data return, ", resGetFull.gradeTypes);
-    //     setFullGradeStructure(resGetFull.gradeTypes);
-    //     setGradeStructureId(resGetFull.id);
-    //     console.log("gradestrucure id: ", resGetFull.id);
-    //     updateColumns(resGetFull.gradeTypes);
-    //     messageApi.success("Load structure successfully");
-    //   })
-    //   .catch((err: any) => {
-    //     console.log("PointPage: Failed to load grade structure", err);
-    //     messageApi.error("Fail to load grade structure");
-    //   });
   };
 
   const timeRender = useRef(0);

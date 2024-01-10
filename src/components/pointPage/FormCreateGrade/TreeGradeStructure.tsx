@@ -157,6 +157,7 @@ const TreeGradeStructure = ({
         FetchAllGradesFunction();
         setConfirmLoading(false);
         setOpenAddSubGrade(false);
+        messageApi.success("Add sub grade successfully");
       })
       .catch((err) => {
         messageApi.error("Failed to add grade sub types");
