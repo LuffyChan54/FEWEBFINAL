@@ -45,6 +45,7 @@ interface TreeGradeProps {
   setIsModalViewGradeOpen: Function;
   updateColumns: Function;
   setFullGradeStructure: Function;
+  currentRole: any;
 }
 
 // const treeData: DataNode[] = [
@@ -105,6 +106,7 @@ const TreeGradeStructure = ({
   updateColumns,
   setFullGradeStructure,
   FetchAllGradesFunction,
+  currentRole,
 }: TreeGradeProps) => {
   const [gradeContact, setGradeContact] = useState<any>({ name: "" });
   const [openDeleteGrade, setOpenDeleteGrade] = useState(false);
@@ -207,7 +209,8 @@ const TreeGradeStructure = ({
     fullGradeStructure,
     handeClickAddSubGrade,
     handeClickUpdateGrade,
-    handeClickDeleteGrade
+    handeClickDeleteGrade,
+    currentRole
   );
 
   return (

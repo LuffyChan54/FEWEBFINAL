@@ -24,6 +24,7 @@ import { ClassEndpointWTID } from "services/classService";
 import useSWR, { useSWRConfig } from "swr";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  getAuthReducer,
   getClassOVReducer,
   removeClassOV,
   setAlert,
@@ -40,7 +41,7 @@ interface DataType {
   address: string;
 }
 
-const InitialColumns: ColumnsType<DataType> = [
+const InitialColumns: ColumnsType<any> = [
   {
     title: "Full Name",
     width: "15%",
@@ -54,7 +55,7 @@ const InitialColumns: ColumnsType<DataType> = [
     dataIndex: "studentId",
     key: "studentId",
     fixed: "left",
-    sorter: (a, b) => a.name.length - b.name.length,
+    sorter: (a, b) => +a.studentId - +b.studentId,
     sortDirections: ["descend", "ascend"],
   },
   {
@@ -85,7 +86,12 @@ let data: any[] = [];
 
 const FIXED_COLUMN = 8;
 
-const PointPage = ({ courseId, StudentInCourse }: any) => {
+const PointPage = ({
+  courseId,
+  StudentInCourse,
+  yourRole,
+  classDetail,
+}: any) => {
   const [fixedTop, setFixedTop] = useState(true);
   const [isModalCreateGradeOpen, setIsModalCreateGradeOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -97,11 +103,24 @@ const PointPage = ({ courseId, StudentInCourse }: any) => {
   // const [data, setData] = useState<any>([])
   // const [gradeColumns, setGradeColumns] =
   //   useState<ColumnsType<DataType>>(InitialColumns);
+  let currentRole = yourRole;
   const [isLoadingPointFirstTime, setIsLoadingPointFirstTime] = useState(true);
   const { mutate: myMutate } = useSWRConfig();
   const classOVS = useSelector(getClassOVReducer);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useSelector(getAuthReducer);
+  if (classDetail.host != null) {
+    if (user.userId == classDetail.host.userId) {
+      currentRole = "HOST";
+    } else {
+      classDetail.attendees.forEach((attendee: any) => {
+        if (attendee.userId == user.userId) {
+          currentRole = attendee.role;
+        }
+      });
+    }
+  }
   const updateColumns = (newGradeTypes: GradeType[] | undefined) => {
     if (newGradeTypes == undefined) {
       return InitialColumns;
@@ -113,7 +132,8 @@ const PointPage = ({ courseId, StudentInCourse }: any) => {
       handleUploadListGrade,
       handleMarkFinalize,
       hanlemarkUnFinalize,
-      hanleDownloadGradeTypeTemplate
+      hanleDownloadGradeTypeTemplate,
+      currentRole
     );
     const currLength = temporaryGrades.length;
     const excess = currLength - FIXED_COLUMN;
@@ -424,13 +444,15 @@ const PointPage = ({ courseId, StudentInCourse }: any) => {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-              <Button
-                type="primary"
-                style={{ outline: "none" }}
-                onClick={() => setIsModalCreateGradeOpen(true)}
-              >
-                Create new Grade Structure
-              </Button>
+              {currentRole == "HOST" && (
+                <Button
+                  type="primary"
+                  style={{ outline: "none" }}
+                  onClick={() => setIsModalCreateGradeOpen(true)}
+                >
+                  Create new Grade Structure
+                </Button>
+              )}
               {/* <Button
               type="primary"
               style={{ background: "#ffc069", outline: "none", color: "#000" }}
@@ -445,17 +467,20 @@ const PointPage = ({ courseId, StudentInCourse }: any) => {
               </Button>
             </div>
 
-            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-              <Button
-                loading={isDownloading}
-                icon={<DownloadOutlined />}
-                style={{ outline: "none" }}
-                type="primary"
-                onClick={() => handleDownloadGradeTemplate()}
+            {currentRole == "HOST" && (
+              <div
+                style={{ display: "flex", gap: "10px", marginBottom: "10px" }}
               >
-                Download board grade
-              </Button>
-              {/* <Upload
+                <Button
+                  loading={isDownloading}
+                  icon={<DownloadOutlined />}
+                  style={{ outline: "none" }}
+                  type="primary"
+                  onClick={() => handleDownloadGradeTemplate()}
+                >
+                  Download board grade
+                </Button>
+                {/* <Upload
               action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
               onChange={(info) => importFileXLSX(info)}
               showUploadList={false}
@@ -472,7 +497,8 @@ const PointPage = ({ courseId, StudentInCourse }: any) => {
                 Import file xlsx
               </Button>
             </Upload> */}
-            </div>
+              </div>
+            )}
           </div>
           <Table
             columns={gradeColumns}
@@ -540,6 +566,7 @@ const PointPage = ({ courseId, StudentInCourse }: any) => {
           setIsModalViewGradeOpen={setIsModalViewGradeOpen}
           updateColumns={updateColumns}
           setFullGradeStructure={setFullGradeStructure}
+          currentRole={currentRole}
         />
       </Modal>
       {contextHolder}

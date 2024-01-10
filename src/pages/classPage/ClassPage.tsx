@@ -259,6 +259,8 @@ const ClassPage = memo(() => {
       children: (
         <>
           <PointPage
+            classDetail={classDetail}
+            yourRole={yourRole}
             StudentInCourse={StudentInCourse}
             key={courseId}
             courseId={courseId}
