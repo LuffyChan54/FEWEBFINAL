@@ -8,8 +8,11 @@ import {
 import {
   getAuthReducer,
   getClassOVReducer,
+  getHashInfo,
   removeClassOV,
   setAlert,
+  setClassOverview,
+  setHashInfo,
   setTabActive,
 } from "@redux/reducer";
 import { Tabs, TabsProps, message } from "antd";
@@ -25,14 +28,22 @@ import {
   changeRoleMutation,
   removeAttendeeMutation,
 } from "helpers/remoteOptions/ChangeRoleOptions.";
-import { memo, useEffect, useState } from "react";
+import { cloneDeep } from "lodash";
+import { memo, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { redirect, useNavigate, useParams } from "react-router-dom";
+import {
+  redirect,
+  useLocation,
+  useNavigate,
+  useNavigation,
+  useParams,
+} from "react-router-dom";
 import { toast } from "react-toastify";
 import { ClassOVEndpoint } from "services/classOVService";
 import {
   ClassEndpointWTID,
   getClassDetail,
+  getStudentCard,
   updateBackground,
   updateCourseInfo,
 } from "services/classService";
@@ -79,12 +90,52 @@ const ClassPage = memo(() => {
     },
   });
 
+  const [studentID, setStudentID] = useState<any>(null);
+  const currRenderCount = useRef(0);
+  useEffect(() => {
+    currRenderCount.current++;
+    if (currRenderCount.current == 1) {
+      getStudentCard(courseId)
+        .then((res) => {
+          setStudentID(res.studentId);
+        })
+        .catch((err) => {
+          console.log("ClassPage: Failed to get studentId", err);
+        });
+    }
+  }, []);
+
+  const location = useLocation();
+
+  const hashInfoValue = useSelector(getHashInfo);
+
+  // Get the current hash
+  const currentHash = location.hash;
+  let activeKeyTab = hashInfoValue;
+  let hashToKey = hashInfoValue;
+  if (currentHash != "" && currentHash) {
+    hashToKey = currentHash.slice(1);
+    if (hashToKey != hashInfoValue) {
+      activeKeyTab = hashToKey;
+    }
+  } else {
+    const pureHref = window.location.href.split("#")[0];
+    window.location.href = pureHref + "#" + hashInfoValue;
+  }
+  useEffect(() => {
+    if (hashToKey != hashInfoValue) {
+      dispatch(setHashInfo(hashToKey));
+    }
+  }, []);
+
   useEffect(() => {
     dispatch(setTabActive(courseId));
     return;
   });
 
   const { user } = useSelector(getAuthReducer);
+
+  let StudentInCourse = [];
 
   if (classDetail == undefined) {
     classDetail = {
@@ -98,6 +149,7 @@ const ClassPage = memo(() => {
       host: null,
     };
   } else {
+    StudentInCourse = JSON.parse(classDetail.students as string);
     if (classDetail.host.userId == user.userId) {
       if (yourRole != "ADMIN") {
         setYourRole("ADMIN");
@@ -109,12 +161,31 @@ const ClassPage = memo(() => {
     }
   }
 
+  const mutateStudents = (newStudents: any) => {
+    mutate(() => {
+      const newStudentStr = JSON.stringify(newStudents);
+      return {
+        ...classDetail,
+        students: newStudentStr,
+      };
+    });
+  };
+
   const updateClassOverviewInfo = async (newClassOV: any) => {
     try {
       await mutate(
         updateCourseInfo(courseId, newClassOV, classDetail),
         updateClassOptions(newClassOV, classDetail)
       );
+
+      const newUpdateClassOV = cloneDeep(classOVS);
+      for (const newClassOV of newUpdateClassOV) {
+        if (newClassOV.id === courseId) {
+          newClassOV.name = newClassOV.name;
+          newClassOV.desc = newClassOV.desc;
+        }
+      }
+      dispatch(setClassOverview(newUpdateClassOV));
 
       messageApi.open({
         key: "updatingCourse",
@@ -200,6 +271,8 @@ const ClassPage = memo(() => {
           yourRole={yourRole}
           updateRoleAttendeeDirectly={updateRoleAttendeeDirectly}
           removeAttendeeDirectly={removeAttendeeDirectly}
+          StudentInCourse={StudentInCourse}
+          mutateStudents={mutateStudents}
         />
       ),
     },
@@ -212,14 +285,23 @@ const ClassPage = memo(() => {
       key: "points",
       children: (
         <>
-          <PointPage courseId={courseId} />
+          <PointPage
+            studentID={studentID}
+            classDetail={classDetail}
+            yourRole={yourRole}
+            StudentInCourse={StudentInCourse}
+            key={courseId}
+            courseId={courseId}
+          />
         </>
       ),
     },
   ];
 
   const onChange = (key: string) => {
-    // console.log(key);
+    const pureHref = window.location.href.split("#")[0];
+    window.location.href = pureHref + "#" + key;
+    dispatch(setHashInfo(key));
   };
 
   const reloadClassInfo = () => {
@@ -242,7 +324,7 @@ const ClassPage = memo(() => {
         />
       )}
 
-      <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+      <Tabs defaultActiveKey={activeKeyTab} items={items} onChange={onChange} />
     </>
   );
 });

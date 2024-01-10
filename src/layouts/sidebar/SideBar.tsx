@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getClassOVReducer,
+  getHashInfo,
   getSidebarReducer,
   setTabActive,
 } from "@redux/reducer";
@@ -39,7 +40,7 @@ const SideBar = memo(() => {
 
   //TODO: change title
   const classOverviews: ClassOverviewType[] = useSelector(getClassOVReducer);
-
+  const hashInfoValue = useSelector(getHashInfo);
   const resultClassOV = classOverviews.reduce((prev, curr) => {
     if (curr.profile.role == "TEACHER" || curr.profile.role == "HOST") {
       if (prev.hasOwnProperty("teaching")) {
@@ -86,7 +87,7 @@ const SideBar = memo(() => {
           undefined,
           () => {
             dispatch(setTabActive(classTeaching.id));
-            navigate(`/home/course/${classTeaching.id}`);
+            navigate(`/home/course/${classTeaching.id}#${hashInfoValue}`);
           }
         )
       )
@@ -103,7 +104,7 @@ const SideBar = memo(() => {
           undefined,
           () => {
             dispatch(setTabActive(classLearning.id));
-            navigate(`/home/course/${classLearning.id}`);
+            navigate(`/home/course/${classLearning.id}#${hashInfoValue}`);
           }
         )
       )

@@ -1,7 +1,7 @@
 import { ColumnsType } from "antd/es/table";
 import { GradeType } from "types/grade/returnCreateGrade";
 import cloneDeep from "lodash/cloneDeep";
-import { Button, Tooltip, Upload } from "antd";
+import { Button, Popconfirm, Tooltip, Typography, Upload } from "antd";
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -17,77 +17,139 @@ export const getAllGradesIntoColumns = (
   handleUploadListGrade: any,
   handleMarkFinalize: any,
   hanlemarkUnFinalize: any,
-  hanleDownloadGradeTemplate: any
+  hanleDownloadGradeTemplate: any,
+  currentRole: any,
+  saveEdittedGrade: any,
+  cancelEdittedGrade: any,
+  editGrade: any,
+  editingKey: any
 ): any => {
   const newGradeInRecursion = cloneDeep(gradeInRecursion);
   const allGrades: GradeType[] = flattenGradeTypes(newGradeInRecursion);
 
   const newColumns = allGrades.map((grade) => ({
     title: (
-      <>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
         <div>{grade.label} </div>
-        <Tooltip title="Download grade template">
-          <DownloadOutlined
-            style={{
-              outline: "none",
-              cursor: "pointer",
-              color: "#23b574",
-            }}
-            onClick={() => hanleDownloadGradeTemplate(grade)}
-          />
-        </Tooltip>
 
-        <Upload
-          action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-          onChange={(info) => handleUploadListGrade(info, grade)}
-          showUploadList={false}
-        >
-          <Tooltip title="Upload grade list">
-            <ImportOutlined
-              style={{
-                outline: "none",
-                cursor: "pointer",
-                color: "#23b574",
-                marginLeft: "20px",
-              }}
-            />
-          </Tooltip>
-        </Upload>
+        {currentRole == "HOST" && (
+          <div>
+            <Tooltip title="Download grade template">
+              <DownloadOutlined
+                style={{
+                  outline: "none",
+                  cursor: "pointer",
+                  color: "#23b574",
+                }}
+                onClick={() => hanleDownloadGradeTemplate(grade)}
+              />
+            </Tooltip>
 
-        <Tooltip title={grade.status == "DONE" ? "UnFinalized" : "Finalize"}>
-          {grade.status == "DONE" ? (
-            <NotificationOutlined onClick={() => hanlemarkUnFinalize(grade)} />
-          ) : (
-            <SoundOutlined
-              onClick={() => handleMarkFinalize(grade)}
-              style={{
-                marginLeft: "20px",
-                outline: "none",
-                cursor: "pointer",
-                color: "#23b574",
-              }}
-            />
-          )}
-        </Tooltip>
-      </>
+            <Upload
+              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+              onChange={(info) => handleUploadListGrade(info, grade)}
+              showUploadList={false}
+            >
+              <Tooltip title="Upload grade list">
+                <ImportOutlined
+                  style={{
+                    outline: "none",
+                    cursor: "pointer",
+                    color: "#23b574",
+                    marginLeft: "20px",
+                  }}
+                />
+              </Tooltip>
+            </Upload>
+
+            <Tooltip
+              title={grade.status == "DONE" ? "UnFinalized" : "Finalize"}
+            >
+              {grade.status == "DONE" ? (
+                <NotificationOutlined
+                  style={{
+                    marginLeft: "20px",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => hanlemarkUnFinalize(grade, gradeInRecursion)}
+                />
+              ) : (
+                <SoundOutlined
+                  onClick={() => handleMarkFinalize(grade, gradeInRecursion)}
+                  style={{
+                    marginLeft: "20px",
+                    outline: "none",
+                    cursor: "pointer",
+                    color: "#23b574",
+                  }}
+                />
+              )}
+            </Tooltip>
+          </div>
+        )}
+      </div>
     ),
     width: "15%",
-    dataIndex: grade.label,
+    dataIndex: grade.id,
     key: grade.id,
+    editable: true,
   }));
+
+  const actionColumn = {
+    title: "Action",
+    key: "action",
+    fixed: "right",
+    width: "15%",
+    editable: false,
+    render: (_: any, record: any) => {
+      const editable = record.key === editingKey;
+      return editable ? (
+        <span>
+          <Typography.Link
+            onClick={() => saveEdittedGrade(record.key)}
+            style={{ marginRight: 8 }}
+          >
+            Save
+          </Typography.Link>
+          <Popconfirm title="Sure to cancel?" onConfirm={cancelEdittedGrade}>
+            <a>Cancel</a>
+          </Popconfirm>
+        </span>
+      ) : (
+        <Typography.Link
+          disabled={editingKey !== ""}
+          onClick={() => editGrade(record)}
+        >
+          Edit
+        </Typography.Link>
+      );
+    },
+  };
 
   return [
     initialValue[0],
     initialValue[1],
     ...newColumns,
     initialValue[2],
-    initialValue[3],
+    actionColumn,
   ];
 };
 
-const flattenGradeTypes = (grades: GradeType[]): GradeType[] => {
+export const flattenGradeTypes = (
+  grades: GradeType[] | undefined
+): GradeType[] => {
+  if (grades == undefined) {
+    return [];
+  }
+  grades = cloneDeep(grades);
   let flattenedGrades: GradeType[] = [];
-  console.log(grades);
   grades.forEach((grade) => {
     grade.label =
       grade.label +
@@ -111,7 +173,8 @@ export const changeGradeTypeToNode = (
   grades: GradeType[],
   handleClickAddSubGrade: any,
   handleClickUpdate: any,
-  handleClickDelete: any
+  handleClickDelete: any,
+  currentRole: any
 ) => {
   return grades.map((grade) => {
     const newNode: any = {
@@ -132,26 +195,29 @@ export const changeGradeTypeToNode = (
               style={{ color: "rgba(0,0,0,0.5)" }}
             >{` (${grade.percentage}%)`}</i>{" "}
           </div>
+          {currentRole == "HOST" && (
+            <>
+              <Tooltip title="Add sub grade">
+                <PartitionOutlined
+                  style={{ color: "#23b574", cursor: "pointer" }}
+                  onClick={() => handleClickAddSubGrade(grade)}
+                />
+              </Tooltip>
 
-          <Tooltip title="Add sub grade">
-            <PartitionOutlined
-              style={{ color: "#23b574", cursor: "pointer" }}
-              onClick={() => handleClickAddSubGrade(grade)}
-            />
-          </Tooltip>
-
-          <Tooltip title="Update grade">
-            <ToolOutlined
-              style={{ color: "#ffc53d", cursor: "pointer" }}
-              onClick={() => handleClickUpdate(grade)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete grade">
-            <DeleteOutlined
-              style={{ color: "#ff4d4f", cursor: "pointer" }}
-              onClick={() => handleClickDelete(grade)}
-            />
-          </Tooltip>
+              <Tooltip title="Update grade">
+                <ToolOutlined
+                  style={{ color: "#ffc53d", cursor: "pointer" }}
+                  onClick={() => handleClickUpdate(grade)}
+                />
+              </Tooltip>
+              <Tooltip title="Delete grade">
+                <DeleteOutlined
+                  style={{ color: "#ff4d4f", cursor: "pointer" }}
+                  onClick={() => handleClickDelete(grade)}
+                />
+              </Tooltip>
+            </>
+          )}
         </div>
       ),
       key: grade.id,
@@ -161,7 +227,8 @@ export const changeGradeTypeToNode = (
         grade.gradeSubTypes,
         handleClickAddSubGrade,
         handleClickUpdate,
-        handleClickDelete
+        handleClickDelete,
+        currentRole
       );
       newNode.children = children;
     }
@@ -210,6 +277,30 @@ export const updateGradeById = (
         grade.gradeSubTypes,
         gradeIdToUpdate,
         updatedInfo
+      );
+    }
+
+    return grade;
+  });
+};
+
+export const updateGradeStatusById = (
+  grades: GradeType[],
+  gradeIdToUpdate: any,
+  status: any
+): GradeType[] => {
+  return grades.map((grade) => {
+    if (grade.id === gradeIdToUpdate) {
+      grade.status = status;
+      return cloneDeep(grade);
+    }
+
+    if (grade.gradeSubTypes && grade.gradeSubTypes.length > 0) {
+      // Recursively update subgrades
+      grade.gradeSubTypes = updateGradeStatusById(
+        grade.gradeSubTypes,
+        gradeIdToUpdate,
+        status
       );
     }
 

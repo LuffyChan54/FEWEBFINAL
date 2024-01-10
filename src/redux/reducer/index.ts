@@ -6,4 +6,5 @@ export * from "./userFullReducer";
 export * from "./studentInfoReducer";
 export * from "./flagsForSWR";
 export * from "./alertHomeRemote";
+export * from "./hashInfo";
 export * from "./adminReducer";

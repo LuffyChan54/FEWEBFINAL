@@ -8,6 +8,7 @@ import {
   studentInfoReducer,
   flagsForSWRReducer,
   alertHomeReducer,
+  hashInfoReducer,
   adminReducer,
 } from "./reducer";
 
@@ -21,6 +22,7 @@ export const store = configureStore({
     studentInfo: studentInfoReducer,
     flags: flagsForSWRReducer,
     alerthome: alertHomeReducer,
-    admin: adminReducer,
+    hashinfo: hashInfoReducer,
+    admin: adminReducer
   },
 });

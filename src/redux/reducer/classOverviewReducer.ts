@@ -9,7 +9,6 @@ const classOverviewSlice = createSlice({
     setClassOverview: (_, action) => {
       return [...action.payload];
     },
-
     removeClassOV: (state, action) => {
       const id = action.payload.id;
       const newState = state.filter((classOV) => classOV.id != id);

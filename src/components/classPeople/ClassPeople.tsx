@@ -43,6 +43,8 @@ interface ClassPeopleProps {
   yourRole: String;
   updateRoleAttendeeDirectly: Function;
   removeAttendeeDirectly: Function;
+  StudentInCourse: any;
+  mutateStudents: any;
 }
 
 interface dataTableType
@@ -56,6 +58,8 @@ const ClassPeople = ({
   yourRole,
   updateRoleAttendeeDirectly,
   removeAttendeeDirectly,
+  StudentInCourse,
+  mutateStudents,
 }: ClassPeopleProps) => {
   // preload(ClassEndpointWTID + courseId, () => getClassDetail(courseId));
 
@@ -73,7 +77,7 @@ const ClassPeople = ({
   const [isLoadingUploadStudent, setIsLoadingUploadStudent] = useState(false);
   let currentRole = yourRole;
   const { user } = useSelector(getAuthReducer);
-  const [studentsInClass, setStudentsInClass] = useState([]);
+  // const [studentsInClass, setStudentsInClass] = useState(newStudents);
   const [openRemoveAttendee, setOpenRemoveAttendee] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [removeAttendeeInfoCard, setRemoveAttendeeInfoCard] = useState<any>({
@@ -82,6 +86,19 @@ const ClassPeople = ({
   const handleCancelRemove = () => {
     setOpenRemoveAttendee(false);
   };
+
+  if (StudentInCourse == null || StudentInCourse == undefined) {
+    StudentInCourse = [];
+  }
+
+  const studentsInClass = StudentInCourse.map((student: any) => {
+    return {
+      ...student,
+      name: student.fullname,
+      key: student.studentId,
+    };
+  });
+
   const handleOKRemove = () => {
     setConfirmLoading(true);
     removeAttendee(courseId, removeAttendeeInfoCard.key)
@@ -332,6 +349,7 @@ const ClassPeople = ({
         .then((res: any) => {
           messageApi.success("Successfully uploaded");
           const tempStudentInClass: any = [];
+          mutateStudents(res);
           res.forEach((student: any) => {
             tempStudentInClass.push({
               key: student.studentId,
@@ -339,7 +357,7 @@ const ClassPeople = ({
               studentId: student.studentId,
             });
           });
-          setStudentsInClass(tempStudentInClass);
+          // setStudentsInClass(tempStudentInClass);
         })
         .catch((err) => {
           messageApi.error("Upload failed");

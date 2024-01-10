@@ -45,6 +45,7 @@ interface TreeGradeProps {
   setIsModalViewGradeOpen: Function;
   updateColumns: Function;
   setFullGradeStructure: Function;
+  currentRole: any;
 }
 
 // const treeData: DataNode[] = [
@@ -105,6 +106,7 @@ const TreeGradeStructure = ({
   updateColumns,
   setFullGradeStructure,
   FetchAllGradesFunction,
+  currentRole,
 }: TreeGradeProps) => {
   const [gradeContact, setGradeContact] = useState<any>({ name: "" });
   const [openDeleteGrade, setOpenDeleteGrade] = useState(false);
@@ -157,6 +159,7 @@ const TreeGradeStructure = ({
         FetchAllGradesFunction();
         setConfirmLoading(false);
         setOpenAddSubGrade(false);
+        messageApi.success("Add sub grade successfully");
       })
       .catch((err) => {
         messageApi.error("Failed to add grade sub types");
@@ -206,7 +209,8 @@ const TreeGradeStructure = ({
     fullGradeStructure,
     handeClickAddSubGrade,
     handeClickUpdateGrade,
-    handeClickDeleteGrade
+    handeClickDeleteGrade,
+    currentRole
   );
 
   return (

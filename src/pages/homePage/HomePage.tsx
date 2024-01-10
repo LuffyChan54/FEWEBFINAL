@@ -1,7 +1,9 @@
 import {
   getAlertHome,
   getAuthReducer,
+  getClassOVReducer,
   getFlags,
+  getHashInfo,
   setAlert,
   setClassOverview,
   setFlags,
@@ -32,7 +34,7 @@ import {
   joinClassOV,
 } from "services/classOVService";
 import { addClassOptions, removeClassOptions } from "helpers";
-import { sortBy } from "lodash";
+import { identity, isEqual, sortBy } from "lodash";
 
 interface VirtualInputRefType {
   input: {
@@ -60,6 +62,7 @@ const HomePage = memo(() => {
   const alertValue = useSelector(getAlertHome);
   //checking
   const { token, user } = useSelector(getAuthReducer);
+  const reduxClassOVS = useSelector(getClassOVReducer);
   let {
     isLoading,
     isValidating,
@@ -240,6 +243,8 @@ const HomePage = memo(() => {
     setIsModalOpen(false);
   };
 
+  const hashInfoValue = useSelector(getHashInfo);
+
   const handleCardClick = (id: any, isActive: boolean) => {
     if (!isActive) {
       messageApi.open({
@@ -249,7 +254,7 @@ const HomePage = memo(() => {
         duration: 2,
       });
     } else {
-      navigate("/home/course/" + id);
+       navigate("/home/course/" + id + "#" + hashInfoValue);
     }
   };
 
