@@ -35,7 +35,10 @@ import {
 import { ClassOVEndpoint } from "services/classOVService";
 import { removeClassOptions } from "helpers";
 import { useNavigate } from "react-router-dom";
-import { transformFullGradesToDataGrades } from "utils/transformGrades";
+import {
+  getGradeAndPercentage,
+  transformFullGradesToDataGrades,
+} from "utils/transformGrades";
 
 interface DataType {
   key: React.Key;
@@ -63,7 +66,8 @@ const InitialColumns: ColumnsType<any> = [
   },
   {
     title: "Total grade",
-    key: "totalrade",
+    key: "total",
+    dataIndex: "total",
     fixed: "right",
     width: "5%",
   },
@@ -230,8 +234,11 @@ const PointPage = ({
   //TRANSFORM OBJECT:
 
   data = [];
-  const fullGradeStudentAfterTransform =
-    transformFullGradesToDataGrades(fullStudentGrades);
+  const mapGradeAndPercentage = getGradeAndPercentage(fullGradeStructure);
+  const fullGradeStudentAfterTransform = transformFullGradesToDataGrades(
+    fullStudentGrades,
+    mapGradeAndPercentage
+  );
   StudentInCourse.forEach((student: any) => {
     const availableStudentGrade = fullGradeStudentAfterTransform.find(
       (studentInfo: any) => studentInfo.studentId == student.studentId
@@ -333,7 +340,7 @@ const PointPage = ({
       bodyFormData.append("file", info.file.originFileObj);
       uploadGradeType(grade.id, bodyFormData)
         .then((res: any) => {
-          // console.log("UPLOA RES:", res);
+          console.log("UPLOA RES:", res);
           messageApi.open({
             key: "upload_grade_type_template",
             type: "success",
