@@ -345,7 +345,7 @@ const HomePage = memo(() => {
                     style={{
                       cursor: "pointer",
                     }}
-                    onClick={() => handleCardClick(el.id, el.isActive)}
+                    onClick={() => handleCardClick(el.id, el.isActive!)}
                   >
                     <h6 style={{ marginBottom: "15px" }}>{el.desc}</h6>
                     <p style={{ marginBottom: "2px" }}>
