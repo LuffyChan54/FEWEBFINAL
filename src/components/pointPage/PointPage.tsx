@@ -1,5 +1,17 @@
 import React, { useEffect, useReducer, useRef, useState } from "react";
-import { Button, Modal, Skeleton, Switch, Table, Upload, message } from "antd";
+import {
+  Button,
+  Form,
+  Modal,
+  Popconfirm,
+  Skeleton,
+  Switch,
+  Table,
+  Tooltip,
+  Typography,
+  Upload,
+  message,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
 import {
@@ -20,7 +32,13 @@ import {
   updateGradeStatusById,
 } from "utils/getAllGrades";
 import TreeGradeStructure from "./FormCreateGrade/TreeGradeStructure";
-import { DownloadOutlined, ExportOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  ExportOutlined,
+  ImportOutlined,
+  NotificationOutlined,
+  SoundOutlined,
+} from "@ant-design/icons";
 import cloneDeep from "lodash/cloneDeep";
 import { ClassEndpointWTID } from "services/classService";
 import useSWR, { useSWRConfig } from "swr";
@@ -39,6 +57,7 @@ import {
   getGradeAndPercentage,
   transformFullGradesToDataGrades,
 } from "utils/transformGrades";
+import { EditableCell } from "./EditableCell";
 
 interface DataType {
   key: React.Key;
@@ -46,39 +65,6 @@ interface DataType {
   age: number;
   address: string;
 }
-
-const InitialColumns: ColumnsType<any> = [
-  {
-    title: "Full Name",
-    width: "15%",
-    dataIndex: "name",
-    key: "name",
-    fixed: "left",
-  },
-  {
-    title: "Student ID",
-    width: "15%",
-    dataIndex: "studentId",
-    key: "studentId",
-    fixed: "left",
-    sorter: (a, b) => +a.studentId - +b.studentId,
-    sortDirections: ["descend", "ascend"],
-  },
-  {
-    title: "Total grade",
-    key: "total",
-    dataIndex: "total",
-    fixed: "right",
-    width: "5%",
-  },
-  {
-    title: "Action",
-    key: "operation",
-    fixed: "right",
-    width: "5%",
-    render: () => <a>action</a>,
-  },
-];
 
 //testData
 let data: any[] = [];
@@ -128,6 +114,85 @@ const PointPage = ({
       });
     }
   }
+
+  //EDITABLE CELL:
+  const [form] = Form.useForm();
+  const [editingKey, setEditingKey] = useState("");
+  const isEditing = (record: any) => record.key === editingKey;
+
+  // console.log("EDITING KEY GLOBAL: ", editingKey);
+  const editGrade = (record: any) => {
+    setEditingKey(record.key);
+    updateColumns(fullGradeStructure);
+    form.setFieldsValue({ ...record });
+  };
+
+  const cancelEdittedGrade = () => {
+    const resetCellValueObject: any = {};
+
+    flattenGradeTypes(cloneDeep(fullGradeStructure))?.forEach(
+      (columnValues) => {
+        resetCellValueObject[`${columnValues.id}`] = null;
+      }
+    );
+    form.setFieldsValue({ ...resetCellValueObject });
+    setEditingKey("");
+  };
+
+  const saveEdittedGrade = async (recordKey: any) => {
+    try {
+      const row = (await form.validateFields()) as any;
+
+      const newData = [...data];
+      const index = newData.findIndex((item) => recordKey === item.key);
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, {
+          ...item,
+          ...row,
+        });
+        // setData(newData);
+        console.log("New data: index > -1", index, row, newData);
+        setEditingKey("");
+      } else {
+        newData.push(row);
+        // setData(newData);
+        console.log("New data: index <= -1", index, row, newData);
+        setEditingKey("");
+      }
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
+    }
+  };
+  const InitialColumns: any = [
+    {
+      title: "Full Name",
+      width: "15%",
+      dataIndex: "name",
+      key: "name",
+      fixed: "left",
+      editable: false,
+    },
+    {
+      title: "Student ID",
+      width: "15%",
+      dataIndex: "studentId",
+      key: "studentId",
+      fixed: "left",
+      sorter: (a: any, b: any) => +a.studentId - +b.studentId,
+      sortDirections: ["descend", "ascend"],
+      editable: false,
+    },
+    {
+      title: "Total grade",
+      key: "total",
+      dataIndex: "total",
+      fixed: "right",
+      width: "5%",
+      editable: false,
+    },
+  ];
+
   const updateColumns = (newGradeTypes: GradeType[] | undefined) => {
     if (newGradeTypes == undefined) {
       return InitialColumns;
@@ -140,7 +205,11 @@ const PointPage = ({
       handleMarkFinalize,
       hanlemarkUnFinalize,
       hanleDownloadGradeTypeTemplate,
-      currentRole
+      currentRole,
+      saveEdittedGrade,
+      cancelEdittedGrade,
+      editGrade,
+      editingKey
     );
     const currLength = temporaryGrades.length;
     const excess = currLength - FIXED_COLUMN;
@@ -150,6 +219,7 @@ const PointPage = ({
     setWidthOfScrollX(totalPercentage + "%");
     return temporaryGrades;
   };
+
   //ForSWR:
 
   if (StudentInCourse == null || StudentInCourse == undefined) {
@@ -362,8 +432,11 @@ const PointPage = ({
   };
   const handleMarkFinalize = (
     grade: GradeType,
-    fullGradeStructure: GradeType[]
+    fullGradeStructure: GradeType[] | undefined
   ) => {
+    if (fullGradeStructure == undefined) {
+      return;
+    }
     messageApi.open({
       key: "finalize_grade_type_template",
       type: "loading",
@@ -400,8 +473,11 @@ const PointPage = ({
   };
   const hanlemarkUnFinalize = (
     grade: GradeType,
-    fullGradeStructure: GradeType[]
+    fullGradeStructure: GradeType[] | undefined
   ) => {
+    if (fullGradeStructure == undefined) {
+      return;
+    }
     messageApi.open({
       key: "unfinalize_grade_type_template",
       type: "loading",
@@ -500,6 +576,149 @@ const PointPage = ({
       });
   };
 
+  //For Editable cell:
+
+  //FKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+  const newGradeInRecursion = cloneDeep(fullGradeStructure);
+  const allGrades: GradeType[] = flattenGradeTypes(newGradeInRecursion);
+
+  const newColumns = allGrades.map((grade) => ({
+    title: (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>{grade.label} </div>
+
+        {currentRole == "HOST" && (
+          <div>
+            <Tooltip title="Download grade template">
+              <DownloadOutlined
+                style={{
+                  outline: "none",
+                  cursor: "pointer",
+                  color: "#23b574",
+                }}
+                onClick={() => hanleDownloadGradeTypeTemplate(grade)}
+              />
+            </Tooltip>
+
+            <Upload
+              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+              onChange={(info) => handleUploadListGrade(info, grade)}
+              showUploadList={false}
+            >
+              <Tooltip title="Upload grade list">
+                <ImportOutlined
+                  style={{
+                    outline: "none",
+                    cursor: "pointer",
+                    color: "#23b574",
+                    marginLeft: "20px",
+                  }}
+                />
+              </Tooltip>
+            </Upload>
+
+            <Tooltip
+              title={grade.status == "DONE" ? "UnFinalized" : "Finalize"}
+            >
+              {grade.status == "DONE" ? (
+                <NotificationOutlined
+                  style={{
+                    marginLeft: "20px",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => hanlemarkUnFinalize(grade, fullGradeStructure)}
+                />
+              ) : (
+                <SoundOutlined
+                  onClick={() => handleMarkFinalize(grade, fullGradeStructure)}
+                  style={{
+                    marginLeft: "20px",
+                    outline: "none",
+                    cursor: "pointer",
+                    color: "#23b574",
+                  }}
+                />
+              )}
+            </Tooltip>
+          </div>
+        )}
+      </div>
+    ),
+    width: "15%",
+    dataIndex: grade.id,
+    key: grade.id,
+    editable: true,
+  }));
+
+  const actionColumn = {
+    title: "Action",
+    key: "action",
+    fixed: "right",
+    width: "15%",
+    editable: false,
+    render: (_: any, record: any) => {
+      const editable = record.key === editingKey;
+      // console.log("EDITABLE: ", record.key, editable);
+      return editable ? (
+        <span>
+          <Typography.Link
+            onClick={() => saveEdittedGrade(record.key)}
+            style={{ marginRight: 8 }}
+          >
+            Save
+          </Typography.Link>
+          <Popconfirm title="Sure to cancel?" onConfirm={cancelEdittedGrade}>
+            <a>Cancel</a>
+          </Popconfirm>
+        </span>
+      ) : (
+        <Typography.Link
+          disabled={editingKey !== ""}
+          onClick={() => editGrade(record)}
+        >
+          Edit
+        </Typography.Link>
+      );
+    },
+  };
+
+  if (gradeColumns == undefined) {
+    gradeColumns = [];
+  }
+
+  gradeColumns = [
+    InitialColumns[0],
+    InitialColumns[1],
+    ...newColumns,
+    InitialColumns[2],
+    actionColumn,
+  ];
+
+  //fkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
+
+  const mergedColumns = gradeColumns.map((col: any) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record: any) => ({
+        record,
+        inputType: "number",
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record),
+      }),
+    };
+  });
+
   return (
     <>
       {isLoadingPointFirstTime ? (
@@ -564,33 +783,43 @@ const PointPage = ({
               </div>
             )}
           </div>
-          <Table
-            columns={gradeColumns}
-            dataSource={data}
-            scroll={{ x: widthOfScrollX }}
-            summary={() => (
-              <Table.Summary fixed={fixedTop ? "top" : "bottom"}>
-                <Table.Summary.Row>
-                  <Table.Summary.Cell index={0} colSpan={1}>
-                    <Switch
-                      checkedChildren="Fixed Top"
-                      unCheckedChildren="Fixed Top"
-                      checked={fixedTop}
-                      onChange={() => {
-                        setFixedTop(!fixedTop);
-                      }}
-                    />
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={2} colSpan={8}>
-                    {/* Points */}
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={10}></Table.Summary.Cell>
-                </Table.Summary.Row>
-              </Table.Summary>
-            )}
-            // antd site header height
-            sticky={{ offsetHeader: 64 }}
-          />
+
+          <Form form={form} component={false}>
+            <Table
+              components={{
+                body: {
+                  cell: EditableCell,
+                },
+              }}
+              columns={mergedColumns}
+              dataSource={data}
+              scroll={{ x: widthOfScrollX }}
+              rowClassName="editable-row"
+              bordered
+              summary={() => (
+                <Table.Summary fixed={fixedTop ? "top" : "bottom"}>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={1}>
+                      <Switch
+                        checkedChildren="Fixed Top"
+                        unCheckedChildren="Fixed Top"
+                        checked={fixedTop}
+                        onChange={() => {
+                          setFixedTop(!fixedTop);
+                        }}
+                      />
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} colSpan={8}>
+                      {/* Points */}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={10}></Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )}
+              // antd site header height
+              sticky={{ offsetHeader: 64 }}
+            />
+          </Form>
         </div>
       )}
       <Modal

@@ -1,7 +1,7 @@
 import { ColumnsType } from "antd/es/table";
 import { GradeType } from "types/grade/returnCreateGrade";
 import cloneDeep from "lodash/cloneDeep";
-import { Button, Tooltip, Upload } from "antd";
+import { Button, Popconfirm, Tooltip, Typography, Upload } from "antd";
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -18,12 +18,14 @@ export const getAllGradesIntoColumns = (
   handleMarkFinalize: any,
   hanlemarkUnFinalize: any,
   hanleDownloadGradeTemplate: any,
-  currentRole: any
+  currentRole: any,
+  saveEdittedGrade: any,
+  cancelEdittedGrade: any,
+  editGrade: any,
+  editingKey: any
 ): any => {
   const newGradeInRecursion = cloneDeep(gradeInRecursion);
   const allGrades: GradeType[] = flattenGradeTypes(newGradeInRecursion);
-
-  // console.log("Flatten", allGrades);
 
   const newColumns = allGrades.map((grade) => ({
     title: (
@@ -97,18 +99,55 @@ export const getAllGradesIntoColumns = (
     width: "15%",
     dataIndex: grade.id,
     key: grade.id,
+    editable: true,
   }));
+
+  const actionColumn = {
+    title: "Action",
+    key: "action",
+    fixed: "right",
+    width: "15%",
+    editable: false,
+    render: (_: any, record: any) => {
+      const editable = record.key === editingKey;
+      return editable ? (
+        <span>
+          <Typography.Link
+            onClick={() => saveEdittedGrade(record.key)}
+            style={{ marginRight: 8 }}
+          >
+            Save
+          </Typography.Link>
+          <Popconfirm title="Sure to cancel?" onConfirm={cancelEdittedGrade}>
+            <a>Cancel</a>
+          </Popconfirm>
+        </span>
+      ) : (
+        <Typography.Link
+          disabled={editingKey !== ""}
+          onClick={() => editGrade(record)}
+        >
+          Edit
+        </Typography.Link>
+      );
+    },
+  };
 
   return [
     initialValue[0],
     initialValue[1],
     ...newColumns,
     initialValue[2],
-    initialValue[3],
+    actionColumn,
   ];
 };
 
-export const flattenGradeTypes = (grades: GradeType[]): GradeType[] => {
+export const flattenGradeTypes = (
+  grades: GradeType[] | undefined
+): GradeType[] => {
+  if (grades == undefined) {
+    return [];
+  }
   grades = cloneDeep(grades);
   let flattenedGrades: GradeType[] = [];
   grades.forEach((grade) => {
