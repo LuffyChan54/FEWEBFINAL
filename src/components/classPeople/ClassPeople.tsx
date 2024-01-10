@@ -87,6 +87,10 @@ const ClassPeople = ({
     setOpenRemoveAttendee(false);
   };
 
+  if (StudentInCourse == null || StudentInCourse == undefined) {
+    StudentInCourse = [];
+  }
+
   const studentsInClass = StudentInCourse.map((student: any) => {
     return {
       ...student,

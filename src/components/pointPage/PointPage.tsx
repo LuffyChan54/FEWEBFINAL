@@ -32,7 +32,6 @@ import {
 import { ClassOVEndpoint } from "services/classOVService";
 import { removeClassOptions } from "helpers";
 import { useNavigate } from "react-router-dom";
-import { stubTrue } from "lodash";
 
 interface DataType {
   key: React.Key;
@@ -126,6 +125,9 @@ const PointPage = ({ courseId, StudentInCourse }: any) => {
   };
   //ForSWR:
 
+  if (StudentInCourse == null || StudentInCourse == undefined) {
+    StudentInCourse = [];
+  }
   data = [];
   StudentInCourse.forEach((student: any) => {
     data.push({
