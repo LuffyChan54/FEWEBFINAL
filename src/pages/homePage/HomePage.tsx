@@ -1,6 +1,7 @@
 import {
   getAlertHome,
   getAuthReducer,
+  getClassOVReducer,
   getFlags,
   getHashInfo,
   setAlert,
@@ -23,6 +24,7 @@ import {
   joinClassOV,
 } from "services/classOVService";
 import { addClassOptions, removeClassOptions } from "helpers";
+import { identity, isEqual, sortBy } from "lodash";
 
 interface VirtualInputRefType {
   input: {
@@ -50,6 +52,7 @@ const HomePage = memo(() => {
   const alertValue = useSelector(getAlertHome);
   //checking
   const { token, user } = useSelector(getAuthReducer);
+  const reduxClassOVS = useSelector(getClassOVReducer);
   let {
     isLoading,
     isValidating,

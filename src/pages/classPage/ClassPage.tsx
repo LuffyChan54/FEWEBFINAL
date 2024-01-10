@@ -11,6 +11,7 @@ import {
   getHashInfo,
   removeClassOV,
   setAlert,
+  setClassOverview,
   setHashInfo,
   setTabActive,
 } from "@redux/reducer";
@@ -27,7 +28,8 @@ import {
   changeRoleMutation,
   removeAttendeeMutation,
 } from "helpers/remoteOptions/ChangeRoleOptions.";
-import { memo, useEffect, useState } from "react";
+import { cloneDeep } from "lodash";
+import { memo, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   redirect,
@@ -41,6 +43,7 @@ import { ClassOVEndpoint } from "services/classOVService";
 import {
   ClassEndpointWTID,
   getClassDetail,
+  getStudentCard,
   updateBackground,
   updateCourseInfo,
 } from "services/classService";
@@ -86,6 +89,21 @@ const ClassPage = memo(() => {
       }
     },
   });
+
+  const [studentID, setStudentID] = useState<any>(null);
+  const currRenderCount = useRef(0);
+  useEffect(() => {
+    currRenderCount.current++;
+    if (currRenderCount.current == 1) {
+      getStudentCard(courseId)
+        .then((res) => {
+          setStudentID(res.studentId);
+        })
+        .catch((err) => {
+          console.log("ClassPage: Failed to get studentId", err);
+        });
+    }
+  }, []);
 
   const location = useLocation();
 
@@ -159,6 +177,15 @@ const ClassPage = memo(() => {
         updateCourseInfo(courseId, newClassOV, classDetail),
         updateClassOptions(newClassOV, classDetail)
       );
+
+      const newUpdateClassOV = cloneDeep(classOVS);
+      for (const newClassOV of newUpdateClassOV) {
+        if (newClassOV.id === courseId) {
+          newClassOV.name = newClassOV.name;
+          newClassOV.desc = newClassOV.desc;
+        }
+      }
+      dispatch(setClassOverview(newUpdateClassOV));
 
       messageApi.open({
         key: "updatingCourse",
@@ -259,6 +286,7 @@ const ClassPage = memo(() => {
       children: (
         <>
           <PointPage
+            studentID={studentID}
             classDetail={classDetail}
             yourRole={yourRole}
             StudentInCourse={StudentInCourse}

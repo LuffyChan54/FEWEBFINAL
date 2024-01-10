@@ -94,6 +94,7 @@ const ClassPeople = ({
   const studentsInClass = StudentInCourse.map((student: any) => {
     return {
       ...student,
+      name: student.fullname,
       key: student.studentId,
     };
   });

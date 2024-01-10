@@ -21,6 +21,7 @@ import {
   getFullArrayGradeTypeData,
   getFullGradeData,
   getIDGradeStructure,
+  getStudentGradeForStudent,
   getStudentGradeForTeacher,
   updateBatchGradeForStudent,
   uploadGradeType,
@@ -59,6 +60,7 @@ import {
   transformFullGradesToDataGrades,
 } from "utils/transformGrades";
 import { EditableCell } from "./EditableCell";
+import { current } from "@reduxjs/toolkit";
 
 interface DataType {
   key: React.Key;
@@ -77,6 +79,7 @@ const PointPage = ({
   StudentInCourse,
   yourRole,
   classDetail,
+  studentID,
 }: any) => {
   const [fixedTop, setFixedTop] = useState(true);
   const [isModalCreateGradeOpen, setIsModalCreateGradeOpen] = useState(false);
@@ -281,15 +284,28 @@ const PointPage = ({
       let resultFullStudentGrade: any = {};
       for (let i = 0; i < tempGradeStructures.length; i++) {
         try {
-          const res = await getStudentGradeForTeacher(
-            tempGradeStructures[i].id
-          );
-          resultFullStudentGrade[`${tempGradeStructures[i].id}`] = res;
+          if (currentRole != "STUDENT") {
+            const res = await getStudentGradeForTeacher(
+              tempGradeStructures[i].id
+            );
+            resultFullStudentGrade[`${tempGradeStructures[i].id}`] = res;
+          } else {
+            const res = await getStudentGradeForStudent(
+              tempGradeStructures[i].id
+            );
+            const newArrayStudentPoint = [];
+            newArrayStudentPoint.push({
+              studentId: studentID,
+              point: res.point,
+            });
+            resultFullStudentGrade[`${tempGradeStructures[i].id}`] =
+              newArrayStudentPoint;
+          }
         } catch (err: any) {
-          console.log(
-            "Failed to load grade student " + tempGradeStructures[i].label,
-            err
-          );
+          // console.log(
+          //   "Failed to load grade student " + tempGradeStructures[i].label,
+          //   err
+          // );
         }
       }
       return resultFullStudentGrade;
@@ -362,20 +378,40 @@ const PointPage = ({
     mapGradeAndPercentage
   );
   StudentInCourse.forEach((student: any) => {
-    const availableStudentGrade = fullGradeStudentAfterTransform.find(
-      (studentInfo: any) => studentInfo.studentId == student.studentId
-    );
-    if (availableStudentGrade != undefined) {
-      data.push({
-        ...availableStudentGrade,
-        name: student.fullname,
-      });
+    if (currentRole == "STUDENT") {
+      if (student.studentId == studentID) {
+        const availableStudentGrade = fullGradeStudentAfterTransform.find(
+          (studentInfo: any) => studentInfo.studentId == student.studentId
+        );
+        if (availableStudentGrade != undefined) {
+          data.push({
+            ...availableStudentGrade,
+            name: student.fullname,
+          });
+        } else {
+          data.push({
+            key: student.studentId,
+            name: student.fullname,
+            studentId: student.studentId,
+          });
+        }
+      }
     } else {
-      data.push({
-        key: student.studentId,
-        name: student.fullname,
-        studentId: student.studentId,
-      });
+      const availableStudentGrade = fullGradeStudentAfterTransform.find(
+        (studentInfo: any) => studentInfo.studentId == student.studentId
+      );
+      if (availableStudentGrade != undefined) {
+        data.push({
+          ...availableStudentGrade,
+          name: student.fullname,
+        });
+      } else {
+        data.push({
+          key: student.studentId,
+          name: student.fullname,
+          studentId: student.studentId,
+        });
+      }
     }
   });
 
@@ -731,12 +767,14 @@ const PointPage = ({
           </Popconfirm>
         </span>
       ) : (
-        <Typography.Link
-          disabled={editingKey !== ""}
-          onClick={() => editGrade(record)}
-        >
-          Edit
-        </Typography.Link>
+        currentRole != "STUDENT" && (
+          <Typography.Link
+            disabled={editingKey !== ""}
+            onClick={() => editGrade(record)}
+          >
+            Edit
+          </Typography.Link>
+        )
       );
     },
   };

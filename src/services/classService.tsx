@@ -99,3 +99,10 @@ export const uploadListStudent = async (courseID: any, listStudent: any) => {
 
   return res.data;
 };
+
+export const getStudentCard = async (courseID: any) => {
+  const res = await classClient.get(
+    ClassEndpointWTID + courseID + "/attendee/student-card"
+  );
+  return res.data;
+};
