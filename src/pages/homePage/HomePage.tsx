@@ -91,6 +91,19 @@ const HomePage = memo(() => {
   });
 
   const isFinishLoadingFirstTime = useRef(0);
+  if (classOVs) {
+    isFinishLoadingFirstTime.current++;
+    if (isFinishLoadingFirstTime.current == 1) {
+      // messageApi.open({
+      //   key: "loadingCourses",
+      //   type: "success",
+      //   content: "Success! Loaded courses 🎉.",
+      //   duration: 2,
+      // });
+      setIsFetchingClassesFirstTime(false);
+    }
+  }
+
   useEffect(() => {
     if (!user.emailVerified) {
       userService
@@ -117,19 +130,6 @@ const HomePage = memo(() => {
       //   content: "Loading courses...",
       //   duration: 0,
       // });
-    }
-
-    if (classOVs) {
-      isFinishLoadingFirstTime.current++;
-      if (isFinishLoadingFirstTime.current == 1) {
-        // messageApi.open({
-        //   key: "loadingCourses",
-        //   type: "success",
-        //   content: "Success! Loaded courses 🎉.",
-        //   duration: 2,
-        // });
-        setIsFetchingClassesFirstTime(false);
-      }
     }
   }, []);
 
@@ -254,7 +254,7 @@ const HomePage = memo(() => {
         duration: 2,
       });
     } else {
-       navigate("/home/course/" + id + "#" + hashInfoValue);
+      navigate("/home/course/" + id + "#" + hashInfoValue);
     }
   };
 
