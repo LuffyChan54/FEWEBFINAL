@@ -211,6 +211,18 @@ export const updateBatchGradeForStudent = async (
       const studentList = fullStudentGrades[`${key}`];
       for (const student of studentList) {
         if (student.studentId == studentID) {
+          deleteStudentGrade(key, studentID);
+          break;
+        }
+      }
+    }
+  }
+
+  for (const key in values) {
+    if (values[key] == null) {
+      const studentList = fullStudentGrades[`${key}`];
+      for (const student of studentList) {
+        if (student.studentId == studentID) {
           student.point = null;
           break;
         }
@@ -219,4 +231,17 @@ export const updateBatchGradeForStudent = async (
   }
 
   return fullStudentGrades;
+};
+
+export const deleteStudentGrade = async (gradeTypeId: any, studentId: any) => {
+  const res = await gradeClient.delete(
+    GradeEndpointWTID +
+      "/type/" +
+      gradeTypeId +
+      "/student?studentId=" +
+      studentId
+  );
+
+  console.log("DELETE DATA: ", res.data);
+  return res.data;
 };
