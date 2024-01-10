@@ -9,4 +9,5 @@ export interface ClassOverviewType {
   createdAt: string;
   host: Attendee;
   profile: Attendee;
+  isActive?: boolean;
 }

@@ -20,6 +20,8 @@ import { ToastContainer, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { signin, signup } from "@redux/reducer";
 import { authClient } from "lib/axios";
+import moment from "moment";
+
 type LoginType = "login" | "signup" | "forgot";
 
 const authItems: TabsProps["items"] = [
@@ -90,7 +92,7 @@ const AuthPage = () => {
             dispatch(
               signin({
                 user: userInfo,
-                token,
+                token
               })
             );
             toast.success("Log In Successfully", { theme: "colored" });

@@ -19,4 +19,5 @@ export interface ClassInfoType {
   attendees: Attendee[];
   host: Attendee;
   students?: String;
+  isActive?: boolean;
 }

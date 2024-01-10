@@ -1,13 +1,8 @@
+import moment from "moment";
 export const getNextExpiresTime = (expiresIn: number): string => {
-  const currentDate = new Date();
-  const expiresTimeDate = new Date(currentDate.getTime() + expiresIn * 1000);
-  const expiresTime = expiresTimeDate.toString();
-  return expiresTime;
+  return moment().add(expiresIn, "seconds").toString();
 };
 
 export const isTokenStillValid = (expiresTime: string): boolean => {
-  if (expiresTime.trim().length == 0) return false;
-  const now = new Date();
-  const expiresDate = new Date(expiresTime);
-  return now < expiresDate;
+  return moment(expiresTime).isAfter(new Date());
 };

@@ -9,6 +9,7 @@ import {
   flagsForSWRReducer,
   alertHomeReducer,
   hashInfoReducer,
+  adminReducer,
 } from "./reducer";
 
 export const store = configureStore({
@@ -22,5 +23,6 @@ export const store = configureStore({
     flags: flagsForSWRReducer,
     alerthome: alertHomeReducer,
     hashinfo: hashInfoReducer,
+    admin: adminReducer
   },
 });

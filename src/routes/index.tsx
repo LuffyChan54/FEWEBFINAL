@@ -10,6 +10,13 @@ import VerifyEmailPage from "pages/verifyEmailPage/VerifyEmailPage";
 import ClassPage from "pages/classPage/ClassPage";
 import TemporaryPage from "pages/temporary/TemporaryPage";
 import UserInfo from "pages/userInfo/UserInfo";
+import AdminPage from "pages/adminPage/adminPage";
+import AdminClassPage from "pages/adminPage/adminClassPage";
+import AdminLayout from "layouts/globalLayout/AdminLayout";
+import ProtectRoute, {
+  NavigateToAdminRoute,
+} from "components/auth/protectRouter";
+import Unauthorized from "pages/errorPage/403";
 // export const routes = createRoutesFromElements(
 //     <Route>
 //         <Route path="/" element={<AnonymousLayout />}>
@@ -68,7 +75,30 @@ export const routes = createBrowserRouter([
     ],
   },
   {
+    element: <NavigateToAdminRoute />,
+    children: [
+      {
+        path: "/",
+        element: <AdminLayout />,
+        children: [
+          {
+            path: "/admin",
+            element: <AdminPage />,
+          },
+          {
+            path: "/admin/course",
+            element: <AdminClassPage />,
+          },
+        ],
+      },
+    ],
+  },
+  {
     path: "/course/attendee",
     element: <TemporaryPage />,
+  },
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />,
   },
 ]);
