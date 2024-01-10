@@ -22,6 +22,7 @@ import {
   getFullGradeData,
   getIDGradeStructure,
   getStudentGradeForTeacher,
+  updateBatchGradeForStudent,
   uploadGradeType,
   uploadStudentGrade,
 } from "services/gradeService";
@@ -68,14 +69,6 @@ interface DataType {
 
 //testData
 let data: any[] = [];
-// for (let i = 0; i < 100; i++) {
-//   data.push({
-//     key: i,
-//     name: `Edward ${i}`,
-//     age: 32,
-//     address: `London Park no. ${i}`,
-//   });
-// }
 
 const FIXED_COLUMN = 8;
 
@@ -142,7 +135,6 @@ const PointPage = ({
   const saveEdittedGrade = async (recordKey: any) => {
     try {
       const row = (await form.validateFields()) as any;
-
       const newData = [...data];
       const index = newData.findIndex((item) => recordKey === item.key);
       if (index > -1) {
@@ -152,14 +144,22 @@ const PointPage = ({
           ...row,
         });
         // setData(newData);
-        console.log("New data: index > -1", index, row, newData);
         setEditingKey("");
       } else {
         newData.push(row);
         // setData(newData);
-        console.log("New data: index <= -1", index, row, newData);
         setEditingKey("");
       }
+
+      updateGradeMutation(row, recordKey);
+      const resetCellValueObject: any = {};
+
+      flattenGradeTypes(cloneDeep(fullGradeStructure))?.forEach(
+        (columnValues) => {
+          resetCellValueObject[`${columnValues.id}`] = null;
+        }
+      );
+      form.setFieldsValue({ ...resetCellValueObject });
     } catch (errInfo) {
       console.log("Validate Failed:", errInfo);
     }
@@ -300,6 +300,58 @@ const PointPage = ({
       },
     }
   );
+
+  const UpdateGradeOptions = (
+    fullStudentGrades: any,
+    objectChange: any,
+    studentId: any
+  ) => {
+    const result = cloneDeep(fullStudentGrades);
+    const updateObjectKeys = Object.keys(objectChange);
+    for (const key of updateObjectKeys) {
+      const studentData = result[`${key}`];
+      let isExisted = false;
+      for (const student of studentData) {
+        if (student.studentId == studentId) {
+          isExisted = true;
+          student.point = objectChange[`${key}`];
+          break;
+        }
+      }
+      if (!isExisted) {
+        studentData.push({
+          studentId: studentId,
+          point: objectChange[`${key}`],
+        });
+      }
+    }
+    return {
+      optimisticData: result,
+      rollbackOnError: true,
+      populateCache: true,
+      revalidate: false,
+    };
+  };
+
+  const updateGradeMutation = async (values: any, studentId: any) => {
+    try {
+      await mutateStudentGrades(
+        updateBatchGradeForStudent(
+          fullStudentGrades,
+          gradeStructureId,
+          studentId,
+          values
+        ),
+        UpdateGradeOptions(fullStudentGrades, values, studentId)
+      );
+      messageApi.success(
+        "Update grades for student " + studentId + " successfully"
+      );
+    } catch (err) {
+      messageApi.error("Failed to update grades for student " + studentId);
+      console.log("PointPage: Failed to update grades for student ", err);
+    }
+  };
 
   //TRANSFORM OBJECT:
 
@@ -702,7 +754,6 @@ const PointPage = ({
   ];
 
   //fkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
-
   const mergedColumns = gradeColumns.map((col: any) => {
     if (!col.editable) {
       return col;

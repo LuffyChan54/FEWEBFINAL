@@ -170,3 +170,53 @@ export const getStudentGradeForTeacher = async (gradeTypeID: any) => {
   );
   return res.data;
 };
+
+export const updateBatchGradeForStudent = async (
+  fullStudentGrades: any,
+  gradeStructureID: any,
+  studentID: any,
+  values: any
+) => {
+  const dataSend: any = [];
+  for (const key in values) {
+    dataSend.push({
+      gradeTypeId: key,
+      point: values[key],
+    });
+  }
+  const res = await gradeClient.put(
+    GradeEndpointWTID + "/" + gradeStructureID + "/student/" + studentID,
+    dataSend
+  );
+  const data = res.data;
+  for (const pointData of data) {
+    const studentList = fullStudentGrades[`${pointData.gradeTypeId}`];
+    let isExisted = false;
+    for (const student of studentList) {
+      if (student.studentId == studentID) {
+        student.point = pointData.point;
+        isExisted = true;
+        break;
+      }
+    }
+    if (!isExisted) {
+      studentList.push({
+        studentId: pointData.studentId,
+        point: pointData.point,
+      });
+    }
+  }
+  for (const key in values) {
+    if (values[key] == null) {
+      const studentList = fullStudentGrades[`${key}`];
+      for (const student of studentList) {
+        if (student.studentId == studentID) {
+          student.point = null;
+          break;
+        }
+      }
+    }
+  }
+
+  return fullStudentGrades;
+};
