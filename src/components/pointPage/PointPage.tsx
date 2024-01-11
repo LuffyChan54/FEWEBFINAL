@@ -87,6 +87,8 @@ const PointPage = ({
   yourRole,
   classDetail,
   studentID,
+  searchParams,
+  changeSearchParams,
 }: any) => {
   const [fixedTop, setFixedTop] = useState(true);
   const [isModalCreateGradeOpen, setIsModalCreateGradeOpen] = useState(false);
@@ -681,6 +683,7 @@ const PointPage = ({
   const [gradeReviewWillCreate, setGradeReviewWillCreate] = useState<GradeType>(
     allGrades[0]
   );
+  const [recordReviews, setRecordReviews] = useState<any>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const handleCancelCreateGradeReviews = () => {
     setOpenCreateGradeReviews(false);
@@ -692,6 +695,7 @@ const PointPage = ({
       .then((res) => {
         messageApi.success("Create grade review successfully");
         console.log("Create grade review return ", res);
+        setOpenCreateGradeReviews(false);
       })
       .catch((err: any) => {
         messageApi.error("Failed to create grade review");
@@ -827,24 +831,31 @@ const PointPage = ({
               Edit
             </Typography.Link>
           )}
-          <Badge dot={hasUnreadReview}>
-            <ConfigProvider
-              theme={{
-                token: {
-                  colorPrimary: "#faad14",
-                  colorPrimaryHover: "#fadb14",
-                },
-              }}
-            >
-              <Button
-                style={{ outline: "none" }}
-                type={hasUnreadReview ? "primary" : "dashed"}
-                onClick={() => setOpenGradeReviews(true)}
-              >
-                Reviews
-              </Button>
-            </ConfigProvider>
-          </Badge>
+          {record.status && record.status != "NOREVIEWS" && (
+            <div style={{ marginLeft: "20px", display: "inline-block" }}>
+              <Badge dot={record.status == "REQUEST"}>
+                <ConfigProvider
+                  theme={{
+                    token: {
+                      colorPrimary: "#fadb14",
+                      colorPrimaryHover: "#faad14",
+                    },
+                  }}
+                >
+                  <Button
+                    style={{ outline: "none" }}
+                    type={record.status == "REQUEST" ? "primary" : "dashed"}
+                    onClick={() => {
+                      setRecordReviews(record);
+                      setOpenGradeReviews(true);
+                    }}
+                  >
+                    Reviews
+                  </Button>
+                </ConfigProvider>
+              </Badge>
+            </div>
+          )}
         </>
       );
     },
@@ -1073,7 +1084,7 @@ const PointPage = ({
         destroyOnClose={true}
         width={1500}
       >
-        <Reviews />
+        <Reviews recordReviews={recordReviews} />
       </Modal>
 
       {contextHolder}

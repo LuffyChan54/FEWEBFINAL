@@ -22,7 +22,7 @@ export const transformFullGradesToDataGrades = (
     for (const studentData of slugData) {
       const studentId = studentData.studentId;
       const point = studentData.point;
-
+      const status = studentData.status;
       // Check if the student already exists in the result array
       const existingStudent = resultArray.find(
         (student: any) => student.studentId === studentId
@@ -42,6 +42,7 @@ export const transformFullGradesToDataGrades = (
           name: studentId,
           [slugKey]: point,
           total: 0,
+          status: status,
         };
         // If the student doesn't exist, create a new entry
         if (mapGradeAndPercentage[slugKey]) {

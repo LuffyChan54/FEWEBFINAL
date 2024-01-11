@@ -1,7 +1,8 @@
 import { Col, Row, Tabs } from "antd";
 import React from "react";
 
-const Reviews = () => {
+const Reviews = ({ recordReviews }: any) => {
+  console.log("REVIEWS: ", recordReviews);
   return (
     <Row>
       <Col span={16}>

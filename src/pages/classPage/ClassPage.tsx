@@ -28,7 +28,7 @@ import {
   changeRoleMutation,
   removeAttendeeMutation,
 } from "helpers/remoteOptions/ChangeRoleOptions.";
-import { cloneDeep } from "lodash";
+import { cloneDeep, isEmpty } from "lodash";
 import { memo, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -129,8 +129,26 @@ const ClassPage = memo(() => {
     return params;
   };
 
+  function stringifyQueryParams(params: any) {
+    const queryString = Object.entries(params)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("&");
+    return queryString;
+  }
+
   const paramsResult = parseQueryParams(window.location.href);
   console.log("Object search params: ", paramsResult);
+  const [searchParams, setSearchParams] = useState({});
+
+  const changeSearchParams = (newSearchParams: any) => {
+    setSearchParams(newSearchParams);
+    let searchHrefParams = "";
+    const pureHref = window.location.href.split("?")[0];
+    if (!isEmpty(paramsResult)) {
+      searchHrefParams = `?${stringifyQueryParams(newSearchParams)}`;
+    }
+    window.location.href = pureHref + searchHrefParams;
+  };
 
   let activeKeyTab = hashInfoValue;
   let hashToKey = hashInfoValue;
@@ -313,6 +331,8 @@ const ClassPage = memo(() => {
             StudentInCourse={StudentInCourse}
             key={courseId}
             courseId={courseId}
+            changeSearchParams={changeSearchParams}
+            searchParams={searchParams}
           />
         </>
       ),
