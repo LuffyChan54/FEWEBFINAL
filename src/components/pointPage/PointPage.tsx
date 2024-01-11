@@ -1,7 +1,10 @@
 import React, { useEffect, useReducer, useRef, useState } from "react";
 import {
+  Badge,
   Button,
   Form,
+  Input,
+  InputNumber,
   Modal,
   Popconfirm,
   Skeleton,
@@ -15,6 +18,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import FormCreateGrade from "./FormCreateGrade/FormCreateGrade";
 import {
+  createGradeReviews,
   downloadGradeTemplate,
   downloadGradeTypeTemplate,
   finalizeGradeType,
@@ -37,6 +41,7 @@ import TreeGradeStructure from "./FormCreateGrade/TreeGradeStructure";
 import {
   DownloadOutlined,
   ExportOutlined,
+  FlagOutlined,
   ImportOutlined,
   NotificationOutlined,
   SoundOutlined,
@@ -670,6 +675,31 @@ const PointPage = ({
   const newGradeInRecursion = cloneDeep(fullGradeStructure);
   const allGrades: GradeType[] = flattenGradeTypes(newGradeInRecursion);
 
+  const [openCreateGradeReviews, setOpenCreateGradeReviews] = useState(false);
+  const [gradeReviewWillCreate, setGradeReviewWillCreate] = useState<GradeType>(
+    allGrades[0]
+  );
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const handleCancelCreateGradeReviews = () => {
+    setOpenCreateGradeReviews(false);
+  };
+
+  const onFinishCreateGradeReviews = (values: any) => {
+    setConfirmLoading(true);
+    createGradeReviews({ ...values, gradeTypeId: gradeReviewWillCreate.id })
+      .then((res) => {
+        messageApi.success("Create grade review successfully");
+        console.log("Create grade review return ", res);
+      })
+      .catch((err: any) => {
+        messageApi.error("Failed to create grade review");
+        console.log("PointPage: Failed to createGradeReview", err);
+      })
+      .finally(() => {
+        setConfirmLoading(false);
+      });
+  };
+
   const newColumns = allGrades.map((grade) => ({
     title: (
       <div
@@ -736,6 +766,23 @@ const PointPage = ({
               )}
             </Tooltip>
           </div>
+        )}
+
+        {currentRole == "STUDENT" && grade.status == "DONE" && (
+          <Tooltip title="Create grade review">
+            <FlagOutlined
+              style={{
+                width: "fit-content",
+                outline: "none",
+                cursor: "pointer",
+                color: "#23b574",
+              }}
+              onClick={() => {
+                setGradeReviewWillCreate(grade);
+                setOpenCreateGradeReviews(true);
+              }}
+            />
+          </Tooltip>
         )}
       </div>
     ),
@@ -950,6 +997,48 @@ const PointPage = ({
           setFullGradeStructure={setFullGradeStructure}
           currentRole={currentRole}
         />
+      </Modal>
+
+      <Modal
+        title={`Create grade review: ${gradeReviewWillCreate.label}`}
+        open={openCreateGradeReviews}
+        onCancel={handleCancelCreateGradeReviews}
+        footer={null}
+        destroyOnClose={true}
+      >
+        <Form
+          name="create_grade_review"
+          onFinish={onFinishCreateGradeReviews}
+          style={{ maxWidth: 600 }}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="Topic"
+            name="topic"
+            rules={[{ required: true, message: "Missing Topic" }]}
+          >
+            <Input placeholder="Topic" />
+          </Form.Item>
+          <Form.Item
+            label="Expected Grade"
+            name="expectedGrade"
+            rules={[{ required: true, message: "Missing expected grade" }]}
+          >
+            <InputNumber placeholder="Expected grade" />
+          </Form.Item>
+          <Form.Item
+            label="Desc"
+            name="desc"
+            rules={[{ required: true, message: "Missing desc" }]}
+          >
+            <Input placeholder="Description" />
+          </Form.Item>
+          <Form.Item>
+            <Button loading={confirmLoading} type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
       {contextHolder}
     </>

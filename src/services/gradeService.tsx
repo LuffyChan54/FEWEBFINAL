@@ -175,7 +175,6 @@ export const getStudentGradeForStudent = async (gradeTypeID: any) => {
   const res = await gradeClient.get(
     GradeEndpointWTID + "/type/" + gradeTypeID + "/student"
   );
-  console.log("Student return grade: ", res.data);
   return res.data;
 };
 
@@ -251,5 +250,10 @@ export const deleteStudentGrade = async (gradeTypeId: any, studentId: any) => {
   );
 
   console.log("DELETE DATA: ", res.data);
+  return res.data;
+};
+
+export const createGradeReviews = async (values: any) => {
+  const res = await gradeClient.post(GradeEndpointWTID + "/review", values);
   return res.data;
 };
