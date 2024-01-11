@@ -28,7 +28,7 @@ import {
   changeRoleMutation,
   removeAttendeeMutation,
 } from "helpers/remoteOptions/ChangeRoleOptions.";
-import { cloneDeep, isEmpty } from "lodash";
+import { cloneDeep, isEmpty, isEqual } from "lodash";
 import { memo, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -111,7 +111,7 @@ const ClassPage = memo(() => {
 
   // Get the current hash
   const currentHash = location.hash.split("?")[0];
-  console.log(currentHash);
+  // console.log(currentHash);
 
   //search params:
   const parseQueryParams = (queryString: any) => {
@@ -137,17 +137,18 @@ const ClassPage = memo(() => {
   }
 
   const paramsResult = parseQueryParams(window.location.href);
-  console.log("Object search params: ", paramsResult);
-  const [searchParams, setSearchParams] = useState({});
-
+  const [searchParams, setSearchParams] = useState(paramsResult);
+  if (!isEqual(searchParams, paramsResult)) {
+    setSearchParams(paramsResult);
+  }
   const changeSearchParams = (newSearchParams: any) => {
-    setSearchParams(newSearchParams);
     let searchHrefParams = "";
     const pureHref = window.location.href.split("?")[0];
     if (!isEmpty(paramsResult)) {
       searchHrefParams = `?${stringifyQueryParams(newSearchParams)}`;
     }
     window.location.href = pureHref + searchHrefParams;
+    setSearchParams(newSearchParams);
   };
 
   let activeKeyTab = hashInfoValue;
@@ -272,7 +273,7 @@ const ClassPage = memo(() => {
   };
 
   const removeAttendeeDirectly = (attendeeID: any) => {
-    console.log("ClassPage: ", classDetail);
+    // console.log("ClassPage: ", classDetail);
     mutate(removeAttendeeMutation(attendeeID, classDetail));
   };
 

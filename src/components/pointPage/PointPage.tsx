@@ -800,6 +800,15 @@ const PointPage = ({
 
   const [hasUnreadReview, setHasUnreadReview] = useState(true);
   const [openGradeReviews, setOpenGradeReviews] = useState(false);
+  const [countCloseOpen, setCountCloseOpen] = useState(0);
+
+  if (searchParams && searchParams.studentid) {
+    if (!openGradeReviews) {
+      console.log(countCloseOpen);
+      setOpenGradeReviews(true);
+    }
+  }
+
   const actionColumn = {
     title: "Action",
     key: "action",
@@ -847,6 +856,8 @@ const PointPage = ({
                     type={record.status == "REQUEST" ? "primary" : "dashed"}
                     onClick={() => {
                       setRecordReviews(record);
+                      setCountCloseOpen(1);
+                      // changeSearchParams({ studentid: record.studentId });
                       setOpenGradeReviews(true);
                     }}
                   >
@@ -889,7 +900,7 @@ const PointPage = ({
       }),
     };
   });
-
+  // console.log(gradeStructureId);
   return (
     <>
       {isLoadingPointFirstTime ? (
@@ -1079,12 +1090,21 @@ const PointPage = ({
       <Modal
         title={`Grade reviews`}
         open={openGradeReviews}
-        onCancel={() => setOpenGradeReviews(false)}
+        onCancel={() => {
+          changeSearchParams({});
+          setCountCloseOpen(1);
+          setOpenGradeReviews(false);
+        }}
         footer={null}
         destroyOnClose={true}
         width={1500}
       >
-        <Reviews recordReviews={recordReviews} />
+        <Reviews
+          gradeStructureId={gradeStructureId}
+          recordReviews={recordReviews}
+          studentIdFromSearchParam={searchParams.studentid}
+          courseId={courseId}
+        />
       </Modal>
 
       {contextHolder}

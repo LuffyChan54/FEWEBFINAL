@@ -264,3 +264,13 @@ export const getGradeTypeReview = async (gradeTypeId: any) => {
   );
   return res.data;
 };
+
+export const getAllGradeReviewsOfStudent = async (
+  gradeStructureId: any,
+  studentId: any
+) => {
+  const res = await gradeClient.get(
+    `/api/review/grade/course?gradeStructureId=${gradeStructureId}&studentId=${studentId}`
+  );
+  return res.data;
+};
