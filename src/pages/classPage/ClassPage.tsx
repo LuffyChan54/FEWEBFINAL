@@ -49,7 +49,7 @@ import {
 } from "services/classService";
 import useSWR, { useSWRConfig } from "swr";
 import { ClassInfoType } from "types";
-
+import { useQueryParam, NumberParam, StringParam } from "use-query-params";
 const ClassPage = memo(() => {
   const { courseId } = useParams();
   const dispatch = useDispatch();
@@ -110,7 +110,28 @@ const ClassPage = memo(() => {
   const hashInfoValue = useSelector(getHashInfo);
 
   // Get the current hash
-  const currentHash = location.hash;
+  const currentHash = location.hash.split("?")[0];
+  console.log(currentHash);
+
+  //search params:
+  const parseQueryParams = (queryString: any) => {
+    const params: any = {};
+    queryString.split("#")[1] &&
+      queryString.split("#")[1].split("?")[1] &&
+      queryString
+        .split("#")[1]
+        .split("?")[1]
+        .split("&")
+        .forEach((param: any) => {
+          const [key, value] = param.split("=");
+          params[key] = value;
+        });
+    return params;
+  };
+
+  const paramsResult = parseQueryParams(window.location.href);
+  console.log("Object search params: ", paramsResult);
+
   let activeKeyTab = hashInfoValue;
   let hashToKey = hashInfoValue;
   if (currentHash != "" && currentHash) {

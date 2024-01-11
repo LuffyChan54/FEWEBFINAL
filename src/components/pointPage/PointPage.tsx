@@ -2,6 +2,7 @@ import React, { useEffect, useReducer, useRef, useState } from "react";
 import {
   Badge,
   Button,
+  ConfigProvider,
   Form,
   Input,
   InputNumber,
@@ -66,6 +67,7 @@ import {
 } from "utils/transformGrades";
 import { EditableCell } from "./EditableCell";
 import { current } from "@reduxjs/toolkit";
+import Reviews from "./Reviews/Reviews";
 
 interface DataType {
   key: React.Key;
@@ -792,6 +794,8 @@ const PointPage = ({
     editable: true,
   }));
 
+  const [hasUnreadReview, setHasUnreadReview] = useState(true);
+  const [openGradeReviews, setOpenGradeReviews] = useState(false);
   const actionColumn = {
     title: "Action",
     key: "action",
@@ -814,14 +818,34 @@ const PointPage = ({
           </Popconfirm>
         </span>
       ) : (
-        currentRole != "STUDENT" && (
-          <Typography.Link
-            disabled={editingKey !== ""}
-            onClick={() => editGrade(record)}
-          >
-            Edit
-          </Typography.Link>
-        )
+        <>
+          {currentRole != "STUDENT" && (
+            <Typography.Link
+              disabled={editingKey !== ""}
+              onClick={() => editGrade(record)}
+            >
+              Edit
+            </Typography.Link>
+          )}
+          <Badge dot={hasUnreadReview}>
+            <ConfigProvider
+              theme={{
+                token: {
+                  colorPrimary: "#faad14",
+                  colorPrimaryHover: "#fadb14",
+                },
+              }}
+            >
+              <Button
+                style={{ outline: "none" }}
+                type={hasUnreadReview ? "primary" : "dashed"}
+                onClick={() => setOpenGradeReviews(true)}
+              >
+                Reviews
+              </Button>
+            </ConfigProvider>
+          </Badge>
+        </>
       );
     },
   };
@@ -1000,7 +1024,7 @@ const PointPage = ({
       </Modal>
 
       <Modal
-        title={`Create grade review: ${gradeReviewWillCreate.label}`}
+        title={`Create grade review: ${gradeReviewWillCreate?.label}`}
         open={openCreateGradeReviews}
         onCancel={handleCancelCreateGradeReviews}
         footer={null}
@@ -1040,6 +1064,18 @@ const PointPage = ({
           </Form.Item>
         </Form>
       </Modal>
+
+      <Modal
+        title={`Grade reviews`}
+        open={openGradeReviews}
+        onCancel={() => setOpenGradeReviews(false)}
+        footer={null}
+        destroyOnClose={true}
+        width={1500}
+      >
+        <Reviews />
+      </Modal>
+
       {contextHolder}
     </>
   );
