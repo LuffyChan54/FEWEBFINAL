@@ -1,5 +1,11 @@
 import { GradeType } from "types/grade/returnCreateGrade";
 
+export interface TeacherInfo {
+  id: String;
+  name: String;
+  email: String;
+  picture?: String;
+}
 export interface GradeReviewResult {
   id: String;
   point: Number;
@@ -8,6 +14,7 @@ export interface GradeReviewResult {
   teacherId: String;
   gradeReviewId: String;
   event: String;
+  teacher: TeacherInfo;
 }
 
 export interface GradeReview {

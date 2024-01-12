@@ -1,4 +1,14 @@
-import { Badge, Col, Row, Skeleton, Tabs } from "antd";
+import {
+  Badge,
+  Col,
+  Descriptions,
+  DescriptionsProps,
+  Row,
+  Skeleton,
+  Steps,
+  Tabs,
+} from "antd";
+import { mapValues } from "lodash";
 import React, { useRef, useState } from "react";
 import { ClassEndpointWTID } from "services/classService";
 import { getAllGradeReviewsOfStudent } from "services/gradeService";
@@ -11,6 +21,7 @@ const Reviews = ({
   studentIdFromSearchParam,
   courseId,
 }: any) => {
+  const [currentReviewResult, setCurrentReviewResult] = useState<any>({});
   const studentIdReview = studentIdFromSearchParam
     ? studentIdFromSearchParam
     : recordReviews.studentId;
@@ -42,10 +53,27 @@ const Reviews = ({
     mutateGradeTypeReviews();
   }
 
-  //Handle logic:
+  //Handle logic:newCurrentReviewResult
   let itemsForGradeTypeReviews: any = [];
   if (gradeTypeReviews != undefined) {
     itemsForGradeTypeReviews = gradeTypeReviews.map((gradeTypeRV) => {
+      //TODO:
+      const newCurrentReviewResultSub: any = {};
+      for (const gradeReviewsEl of gradeTypeRV.gradeReviews) {
+        if (!currentReviewResult[`${gradeTypeRV.id}`]) {
+          newCurrentReviewResultSub[`${gradeReviewsEl.id}`] =
+            gradeReviewsEl.gradeReviewResults.length - 1;
+        }
+      }
+      if (!currentReviewResult[`${gradeTypeRV.id}`]) {
+        const newCurrentReviewResult: any = {};
+        newCurrentReviewResult[`${gradeTypeRV.id}`] = newCurrentReviewResultSub;
+        setCurrentReviewResult({
+          ...currentReviewResult,
+          ...newCurrentReviewResult,
+        });
+      }
+
       const newParentLabel = {
         label: (
           <Badge dot={gradeTypeRV.status == "REQUEST"}>
@@ -61,6 +89,53 @@ const Reviews = ({
             type="card"
             size="small"
             items={gradeTypeRV.gradeReviews.map((gradeReview) => {
+              const itemsGradeReviewDesc: DescriptionsProps["items"] = [
+                {
+                  key: "desc" + gradeReview.id,
+                  label: "Desc",
+                  children: gradeReview.desc,
+                },
+                {
+                  key: "expectedGrade" + gradeReview.id,
+                  label: "Expected Grade",
+                  children: gradeReview.expectedGrade + "",
+                },
+              ];
+              let itemsForGradeReviewResult: any = [];
+              if (
+                gradeReview.gradeReviewResults.length > 0 &&
+                currentReviewResult[`${gradeTypeRV.id}`]
+              ) {
+                const indexOfSub =
+                  currentReviewResult[`${gradeTypeRV.id}`][`${gradeReview.id}`];
+                const objectForResultReview =
+                  gradeReview.gradeReviewResults[indexOfSub];
+                itemsForGradeReviewResult = [
+                  {
+                    key: "point" + objectForResultReview.id,
+                    label: "Point",
+                    children: objectForResultReview.point,
+                  },
+                  {
+                    key: "feedback" + objectForResultReview.id,
+                    label: "Feedback",
+                    children: objectForResultReview.feedback,
+                  },
+                  {
+                    key: "by" + objectForResultReview.id,
+                    label: "By",
+                    children:
+                      objectForResultReview.teacher.name +
+                      ` (${objectForResultReview.teacher.email})`,
+                  },
+                  {
+                    key: "event" + objectForResultReview.id,
+                    label: "Event",
+                    children: objectForResultReview.event,
+                  },
+                ];
+              }
+
               const newChildReview = {
                 label: (
                   <Badge dot={gradeReview.status == "REQUEST"}>
@@ -68,7 +143,52 @@ const Reviews = ({
                   </Badge>
                 ),
                 key: gradeReview.id,
-                children: `${gradeReview.gradeReviewResults}`,
+                children: (
+                  <>
+                    <Descriptions
+                      title="Review Info"
+                      items={itemsGradeReviewDesc}
+                    />
+                    {gradeReview.gradeReviewResults.length > 0 && (
+                      <>
+                        <Steps
+                          current={
+                            currentReviewResult[`${gradeTypeRV.id}`]
+                              ? currentReviewResult[`${gradeTypeRV.id}`][
+                                  `${gradeReview.id}`
+                                ]
+                              : ""
+                          }
+                          onChange={(values: any) => {
+                            const newObjectForSetReviewResult: any = {};
+                            newObjectForSetReviewResult[`${gradeTypeRV.id}`] = {
+                              ...currentReviewResult[`${gradeTypeRV.id}`],
+                            };
+                            newObjectForSetReviewResult[`${gradeTypeRV.id}`][
+                              `${gradeReview.id}`
+                            ] = values;
+                            setCurrentReviewResult({
+                              ...currentReviewResult,
+                              ...newObjectForSetReviewResult,
+                            });
+                          }}
+                          items={gradeReview.gradeReviewResults.map(
+                            (gradeReviewRS) => {
+                              const stepElement = {
+                                title: gradeReviewRS.point,
+                              };
+                              return stepElement as any;
+                            }
+                          )}
+                        />
+                        <Descriptions
+                          title={<p>Grade review result</p>}
+                          items={itemsForGradeReviewResult}
+                        />
+                      </>
+                    )}
+                  </>
+                ),
               };
 
               return newChildReview as any;
