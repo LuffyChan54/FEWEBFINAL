@@ -1104,6 +1104,7 @@ const PointPage = ({
           recordReviews={recordReviews}
           studentIdFromSearchParam={searchParams.studentid}
           courseId={courseId}
+          currentRole={currentRole}
         />
       </Modal>
 

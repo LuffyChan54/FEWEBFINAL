@@ -274,3 +274,11 @@ export const getAllGradeReviewsOfStudent = async (
   );
   return res.data;
 };
+
+export const addReviewResult = async (gradeReviewId: any, values: any) => {
+  const res = await gradeClient.post(
+    "/api/review/grade/" + gradeReviewId + "/result",
+    values
+  );
+  return res.data;
+};

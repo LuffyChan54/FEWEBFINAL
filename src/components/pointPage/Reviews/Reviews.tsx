@@ -1,18 +1,28 @@
 import {
   Badge,
+  Button,
   Col,
   Descriptions,
   DescriptionsProps,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
   Row,
   Skeleton,
   Steps,
   Tabs,
+  Tag,
+  message,
 } from "antd";
-import { mapValues } from "lodash";
+import { cloneDeep, mapValues } from "lodash";
 import React, { useRef, useState } from "react";
 import { ClassEndpointWTID } from "services/classService";
-import { getAllGradeReviewsOfStudent } from "services/gradeService";
-import useSWR from "swr";
+import {
+  addReviewResult,
+  getAllGradeReviewsOfStudent,
+} from "services/gradeService";
+import useSWR, { useSWRConfig } from "swr";
 import { GradeTypeReviews } from "types";
 
 const Reviews = ({
@@ -20,18 +30,24 @@ const Reviews = ({
   gradeStructureId,
   studentIdFromSearchParam,
   courseId,
+  currentRole,
 }: any) => {
+  const [messageApi, contextHolder] = message.useMessage();
+  const { mutate: myMutate } = useSWRConfig();
   const [currentReviewResult, setCurrentReviewResult] = useState<any>({});
   const studentIdReview = studentIdFromSearchParam
     ? studentIdFromSearchParam
     : recordReviews.studentId;
-
+  const [openReviewResult, setOpenReviewResult] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const refValuesCheck = useRef(undefined);
+  const cacheKeyOfReviews =
+    ClassEndpointWTID + courseId + "#points#reviews#" + studentIdReview;
   let {
     data: gradeTypeReviews,
     mutate: mutateGradeTypeReviews,
   }: { data: GradeTypeReviews[]; mutate: any } = useSWR(
-    ClassEndpointWTID + courseId + "#points#reviews#" + studentIdReview,
+    cacheKeyOfReviews,
     async () => {
       if (gradeStructureId != "") {
         const result = await getAllGradeReviewsOfStudent(
@@ -53,6 +69,11 @@ const Reviews = ({
     mutateGradeTypeReviews();
   }
 
+  const refCurrentGradeReviewId = useRef("");
+  const handleAddReviewResult = (gradeReviewID: any) => {
+    refCurrentGradeReviewId.current = gradeReviewID;
+    setOpenReviewResult(true);
+  };
   //Handle logic:newCurrentReviewResult
   let itemsForGradeTypeReviews: any = [];
   if (gradeTypeReviews != undefined) {
@@ -91,6 +112,11 @@ const Reviews = ({
             items={gradeTypeRV.gradeReviews.map((gradeReview) => {
               const itemsGradeReviewDesc: DescriptionsProps["items"] = [
                 {
+                  key: "studentId" + gradeReview.id,
+                  label: "Student",
+                  children: studentIdReview,
+                },
+                {
                   key: "desc" + gradeReview.id,
                   label: "Desc",
                   children: gradeReview.desc,
@@ -98,7 +124,9 @@ const Reviews = ({
                 {
                   key: "expectedGrade" + gradeReview.id,
                   label: "Expected Grade",
-                  children: gradeReview.expectedGrade + "",
+                  children: (
+                    <Tag color="cyan">{gradeReview.expectedGrade + ""}</Tag>
+                  ),
                 },
               ];
               let itemsForGradeReviewResult: any = [];
@@ -113,8 +141,12 @@ const Reviews = ({
                 itemsForGradeReviewResult = [
                   {
                     key: "point" + objectForResultReview.id,
-                    label: "Point",
-                    children: objectForResultReview.point,
+                    label: "Review Grade",
+                    children: (
+                      <Tag color="green">
+                        {objectForResultReview.point + ""}
+                      </Tag>
+                    ),
                   },
                   {
                     key: "feedback" + objectForResultReview.id,
@@ -146,9 +178,47 @@ const Reviews = ({
                 children: (
                   <>
                     <Descriptions
-                      title="Review Info"
+                      title={
+                        <div>
+                          Review Info{" "}
+                          {gradeReview.status == "REQUEST" ? (
+                            <Tag style={{ marginLeft: "10px" }} color="gold">
+                              REQUEST
+                            </Tag>
+                          ) : (
+                            <Tag style={{ marginLeft: "10px" }} color="green">
+                              DONE
+                            </Tag>
+                          )}
+                        </div>
+                      }
                       items={itemsGradeReviewDesc}
                     />
+                    {currentRole != "STUDENT" &&
+                      gradeReview.status == "REQUEST" && (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "10px",
+                            marginBottom: "20px",
+                          }}
+                        >
+                          {gradeReview.gradeReviewResults.length > 0 && (
+                            <Button type="primary" style={{ outline: "none" }}>
+                              Mark Done
+                            </Button>
+                          )}
+                          <Button
+                            type="default"
+                            style={{ outline: "none" }}
+                            onClick={() =>
+                              handleAddReviewResult(gradeReview.id)
+                            }
+                          >
+                            Add review result
+                          </Button>
+                        </div>
+                      )}
                     {gradeReview.gradeReviewResults.length > 0 && (
                       <>
                         <Steps
@@ -182,7 +252,19 @@ const Reviews = ({
                           )}
                         />
                         <Descriptions
-                          title={<p>Grade review result</p>}
+                          title={
+                            <>
+                              <p
+                                style={{
+                                  fontWeight: "normal",
+                                  marginTop: "20px",
+                                  marginBottom: 0,
+                                }}
+                              >
+                                Grade review result
+                              </p>
+                            </>
+                          }
                           items={itemsForGradeReviewResult}
                         />
                       </>
@@ -199,6 +281,56 @@ const Reviews = ({
       return newParentLabel;
     });
   }
+
+  const addReviewResultMutation = (newReviewResult: any) => {
+    const gradeTypeReviewsClone = cloneDeep(gradeTypeReviews);
+    let GradeTypeReviewIdWillChange: any = "";
+    let nextLength = -1;
+    for (const gradeReviewType of gradeTypeReviewsClone) {
+      GradeTypeReviewIdWillChange = gradeReviewType.id;
+      let isFinish = false;
+      for (const gradeReviewSubSearch of gradeReviewType.gradeReviews) {
+        if (gradeReviewSubSearch.id == refCurrentGradeReviewId.current) {
+          nextLength = gradeReviewSubSearch.gradeReviewResults.length;
+          gradeReviewSubSearch.gradeReviewResults.push(newReviewResult);
+          isFinish = true;
+          break;
+        }
+      }
+      if (isFinish) {
+        break;
+      }
+    }
+    myMutate(cacheKeyOfReviews, gradeTypeReviewsClone, false);
+
+    const currentReviewResultClone = cloneDeep(currentReviewResult);
+    currentReviewResultClone[`${GradeTypeReviewIdWillChange}`][
+      `${refCurrentGradeReviewId.current}`
+    ] = nextLength;
+
+    setCurrentReviewResult(currentReviewResultClone);
+  };
+
+  const handleCancelReviewResult = () => {
+    setOpenReviewResult(false);
+  };
+  const onFinishReviewResult = (values: any) => {
+    setConfirmLoading(true);
+    addReviewResult(refCurrentGradeReviewId.current, values)
+      .then((res) => {
+        addReviewResultMutation(res);
+        messageApi.success("Successfully added review result");
+        setOpenReviewResult(false);
+      })
+      .catch((err) => {
+        messageApi.error("Failed to add review result");
+        console.log("Reviews: Failed to addReviewResult", err);
+      })
+      .finally(() => {
+        setConfirmLoading(false);
+      });
+  };
+
   return (
     <>
       {gradeStructureId == "" || !gradeTypeReviews ? (
@@ -218,6 +350,42 @@ const Reviews = ({
           <Col span={8}>CHAT</Col>
         </Row>
       )}
+
+      <Modal
+        title={`Add review result `}
+        open={openReviewResult}
+        onCancel={handleCancelReviewResult}
+        footer={null}
+        destroyOnClose={true}
+      >
+        <Form
+          name="create_grade_review"
+          onFinish={onFinishReviewResult}
+          style={{ maxWidth: 600 }}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="Point"
+            name="point"
+            rules={[{ required: true, message: "Missing grade" }]}
+          >
+            <InputNumber placeholder="Expected grade" />
+          </Form.Item>
+          <Form.Item
+            label="Feedback"
+            name="feedback"
+            rules={[{ required: true, message: "Missing feedback" }]}
+          >
+            <Input placeholder="Description" />
+          </Form.Item>
+          <Form.Item>
+            <Button loading={confirmLoading} type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      {contextHolder}
     </>
   );
 };
