@@ -47,7 +47,7 @@ const Reviews = ({
   const [openReviewResult, setOpenReviewResult] = useState(false);
   const [openDoneGradeReview, setOpenDoneGradeReview] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const refValuesCheck = useRef(undefined);
+  const refValuesCheck = useRef<any>(undefined);
   const cacheKeyOfReviews =
     ClassEndpointWTID + courseId + "#points#reviews#" + studentIdReview;
   let {
@@ -84,6 +84,8 @@ const Reviews = ({
     refCurrentGradeReviewId.current = gradeReviewID;
     setOpenReviewResult(true);
   };
+
+  const [gradeReviewIDChat, setGradeReviewIDChat] = useState("");
   //Handle logic:newCurrentReviewResult
   let itemsForGradeTypeReviews: any = [];
   if (gradeTypeReviews != undefined) {
@@ -119,10 +121,13 @@ const Reviews = ({
             defaultActiveKey="1"
             type="card"
             size="small"
+            onChange={(activeKey: any) => {
+              setGradeReviewIDChat(activeKey);
+            }}
             items={gradeTypeRV.gradeReviews.map((gradeReview) => {
               const itemsGradeReviewDesc: DescriptionsProps["items"] = [
                 {
-                  key: "studentId" + gradeReview.id,
+                  key: gradeReview.id as string,
                   label: "Student",
                   children: studentIdReview,
                 },
@@ -417,6 +422,13 @@ const Reviews = ({
   const handleCancelDone = () => {
     setOpenDoneGradeReview(false);
   };
+
+  if (gradeReviewIDChat == "") {
+    if (refValuesCheck.current) {
+      setGradeReviewIDChat(refValuesCheck.current[0].gradeReviews[0].id);
+    }
+  }
+
   return (
     <>
       {gradeStructureId == "" || !gradeTypeReviews ? (
@@ -434,7 +446,7 @@ const Reviews = ({
             </div>
           </Col>
           <Col span={8}>
-            <MyChat />
+            <MyChat gradeReviewIDChat={gradeReviewIDChat} />
           </Col>
         </Row>
       )}

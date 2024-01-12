@@ -39,6 +39,14 @@ export interface GradeTypeReviews {
   gradeReviews: GradeReview[];
 }
 
+export interface Comment {
+  id: string;
+  content: string;
+  senderId: string;
+  senderName: string;
+  avatar: string;
+}
+
 // [
 //     {
 //         "id": "3269f974-4ff5-4e9a-8f13-862f07bcef99",

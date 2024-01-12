@@ -3,135 +3,128 @@ import "react-chat-elements/dist/main.css";
 import "./MyChat.css";
 // MessageBox component
 import { Button, Input, MessageBox, MessageList } from "react-chat-elements";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Tag } from "antd";
+import io, { Socket } from "socket.io-client";
+import { useSelector } from "react-redux";
+import { getAuthReducer } from "@redux/reducer";
+import { Comment } from "types/reviews/GradeTypeReview";
 
-const MyChat = () => {
+export const GET_COMMENTS = "GET_COMMENTS";
+export const COMMENTS_GOT = "COMMENTS_GOT";
+export const CREATE_COMMENT = "CREATE_COMMENT";
+export const COMMENT_CREATED = "COMMENT_CREATED";
+
+const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
   const messageListReferance = React.createRef();
-  const inputReferance = React.createRef();
+  const inputReferance: any = React.createRef();
 
-  const chatMessages: any = [
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHI",
-    },
-    {
-      position: "right",
-      type: "text",
-      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-    },
-    {
-      position: "left",
-      type: "text",
-      text: "AHIHIhahahahahah",
-    },
-  ];
+  const [chatMessages, setChatMessages] = useState<any>([]);
+
+  const { token, user } = useSelector(getAuthReducer);
+  const [socket, setSocket] = useState<Socket>();
+
+  const getComments = (res: Comment[]) => {
+    setChatMessages([
+      ...chatMessages,
+      ...res.map((message) => ({
+        avatar: message.avatar,
+        avatarFlexible: true,
+        title: (
+          <Tag color={user.userId === message.senderId ? "#23b574" : "#108ee9"}>
+            {message.senderName}
+          </Tag>
+        ),
+        position: user.userId === message.senderId ? "left" : "right",
+        type: "text",
+        text: message.content,
+      })),
+    ]);
+  };
+
+  const commentCreated = (message: Comment) => {
+    console.log(message);
+    setChatMessages((prev: any) => {
+      return [
+        ...prev,
+        {
+          avatar: message.avatar,
+          avatarFlexible: true,
+          title: (
+            <Tag
+              color={user.userId === message.senderId ? "#23b574" : "#108ee9"}
+            >
+              {message.senderName}
+            </Tag>
+          ),
+          position: user.userId === message.senderId ? "left" : "right",
+          type: "text",
+          text: message.content,
+        },
+      ];
+    });
+  };
+
+  const [triggerRender, setTriggerRender] = useState("");
+
+  useEffect(() => {
+    if (!gradeReviewIDChat) {
+      return;
+    }
+
+    const socket = io(import.meta.env.VITE_REVIEW_SOCKET, {
+      extraHeaders: {
+        authorization: "Bearer " + token.accessToken,
+      },
+    });
+
+    socket.emit(
+      GET_COMMENTS,
+      { gradeReviewId: gradeReviewIDChat },
+      getComments
+    );
+
+    socket.on(COMMENT_CREATED, commentCreated);
+
+    setSocket(socket);
+
+    return () => {
+      socket.removeAllListeners();
+      socket.disconnect();
+    };
+  }, [gradeReviewIDChat]);
+
+  const handleSendMessage = () => {
+    const messageSend = inputReferance.current.value;
+    inputReferance.current.value = "";
+
+    socket?.emit(
+      CREATE_COMMENT,
+      {
+        gradeReviewId: gradeReviewIDChat,
+        content: messageSend,
+      },
+      (message: Comment) => {
+        setChatMessages([
+          ...chatMessages,
+          {
+            avatar: message.avatar,
+            avatarFlexible: true,
+            title: (
+              <Tag
+                color={user.userId === message.senderId ? "#23b574" : "#108ee9"}
+              >
+                {message.senderName}
+              </Tag>
+            ),
+            position: user.userId === message.senderId ? "left" : "right",
+            type: "text",
+            text: message.content,
+          },
+        ]);
+      }
+    );
+  };
 
   return (
     <>
@@ -167,13 +160,20 @@ const MyChat = () => {
           maxHeight={100}
           multiline={true}
           value={"inputValue"}
+          autofocus={true}
           inputStyle={{
             // boxShadow: "2px 2px 2px 2px rgba(0,0,0,0.2)",
             padding: "8px",
             borderRadius: "8px ",
           }}
           rightButtons={
-            <Button color="white" backgroundColor="#23b574" text="Send" />
+            <Button
+              color="white"
+              className="outline-none"
+              backgroundColor="#23b574"
+              text="Send"
+              onClick={handleSendMessage}
+            />
           }
         />
       </div>
