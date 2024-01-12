@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getNotifications,
+  maskAsSearchNotifications,
   upsertUserToken,
 } from "services/notificationService";
 import { NotificationTemplate } from "types/notification";
@@ -83,6 +84,22 @@ const MyAlert = () => {
 
   const onItemClick = (item: any, tabProps: any) => {
     console.log(item, tabProps);
+    maskAsSearchNotifications([
+      { notificationId: item.id, isRead: item.isRead },
+    ]).then((notification) => {
+      const newData = data.map((data) => {
+        if (data.id === notification.id) {
+          return {
+            ...data,
+            isRead: notification.isRead,
+          };
+        }
+
+        return data;
+      });
+
+      setData(newData);
+    });
     navigate(item.redirectEndpoint);
   };
 
@@ -99,7 +116,7 @@ const MyAlert = () => {
   return (
     <NoticeIcon
       className="notice-icon"
-      count={data.length}
+      count={data.filter((data) => !data.isRead).length}
       onItemClick={onItemClick}
       onClear={onClear}
       loading={false}
