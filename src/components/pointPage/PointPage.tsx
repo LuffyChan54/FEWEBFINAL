@@ -695,9 +695,19 @@ const PointPage = ({
     setConfirmLoading(true);
     createGradeReviews({ ...values, gradeTypeId: gradeReviewWillCreate.id })
       .then((res) => {
-        messageApi.success("Create grade review successfully");
-        console.log("Create grade review return ", res);
+        const newStudentGrades = cloneDeep(fullStudentGrades);
+        for (const tempStudent of newStudentGrades[
+          `${gradeReviewWillCreate.id}`
+        ]) {
+          if (studentID == tempStudent.studentId) {
+            tempStudent.status = "REQUEST";
+            break;
+          }
+        }
+        myMutate(cacheKeyOfStudentGrade, newStudentGrades, false);
+        // console.log("Create grade review return ", res);
         setOpenCreateGradeReviews(false);
+        messageApi.success("Create grade review successfully");
       })
       .catch((err: any) => {
         messageApi.error("Failed to create grade review");

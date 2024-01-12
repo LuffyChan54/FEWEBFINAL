@@ -34,6 +34,15 @@ export const transformFullGradesToDataGrades = (
         if (mapGradeAndPercentage[slugKey]) {
           existingStudent.total +=
             (point * mapGradeAndPercentage[slugKey]) / 100;
+          existingStudent.total = existingStudent.total.toFixed(2);
+        }
+        if (status == "REQUEST") {
+          existingStudent.status = "REQUEST";
+        }
+        if (status == "DONE") {
+          if (existingStudent.status != "REQUEST") {
+            existingStudent.status = "DONE";
+          }
         }
       } else {
         const newStudent = {

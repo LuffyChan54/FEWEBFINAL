@@ -396,8 +396,8 @@ const Reviews = ({
   };
 
   const handleOKDone = () => {
-    console.log(refCurrentGradeReviewDone.current);
-    console.log(refFinalGradeForCurrentGradeReviewDone.current);
+    // console.log(refCurrentGradeReviewDone.current);
+    // console.log(refFinalGradeForCurrentGradeReviewDone.current);
     setConfirmLoading(true);
     markDoneReviewResult(refCurrentGradeReviewDone.current.id)
       .then((res) => {
