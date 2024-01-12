@@ -26,6 +26,7 @@ import {
 } from "services/gradeService";
 import useSWR, { useSWRConfig } from "swr";
 import { GradeTypeReviews } from "types";
+import MyChat from "./MyChat";
 
 const Reviews = ({
   recordReviews,
@@ -432,7 +433,9 @@ const Reviews = ({
               />
             </div>
           </Col>
-          <Col span={8}>CHAT</Col>
+          <Col span={8}>
+            <MyChat />
+          </Col>
         </Row>
       )}
 
