@@ -110,7 +110,10 @@ const MyAlert = () => {
   onMessageListener()
     .then((message: any) => {
       setPayload(message.data);
-      setData([...data, message.data]);
+      setData([
+        ...data,
+        { ...message.data, isRead: Boolean(message.data.isRead) },
+      ]);
     })
     .catch((err) => console.log("failed: ", err));
   return (
