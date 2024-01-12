@@ -282,3 +282,10 @@ export const addReviewResult = async (gradeReviewId: any, values: any) => {
   );
   return res.data;
 };
+
+export const markDoneReviewResult = async (gradeReviewId: any) => {
+  const res = await gradeClient.put(
+    "/api/review/grade/" + gradeReviewId + "/finalized"
+  );
+  return res.data;
+};

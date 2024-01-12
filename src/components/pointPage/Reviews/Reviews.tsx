@@ -1,3 +1,4 @@
+import { CheckOutlined } from "@ant-design/icons";
 import {
   Badge,
   Button,
@@ -21,6 +22,7 @@ import { ClassEndpointWTID } from "services/classService";
 import {
   addReviewResult,
   getAllGradeReviewsOfStudent,
+  markDoneReviewResult,
 } from "services/gradeService";
 import useSWR, { useSWRConfig } from "swr";
 import { GradeTypeReviews } from "types";
@@ -39,6 +41,7 @@ const Reviews = ({
     ? studentIdFromSearchParam
     : recordReviews.studentId;
   const [openReviewResult, setOpenReviewResult] = useState(false);
+  const [openDoneGradeReview, setOpenDoneGradeReview] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const refValuesCheck = useRef(undefined);
   const cacheKeyOfReviews =
@@ -70,6 +73,8 @@ const Reviews = ({
   }
 
   const refCurrentGradeReviewId = useRef("");
+  const refCurrentGradeReviewDone: any = useRef({});
+  const refFinalGradeForCurrentGradeReviewDone: any = useRef(-1);
   const handleAddReviewResult = (gradeReviewID: any) => {
     refCurrentGradeReviewId.current = gradeReviewID;
     setOpenReviewResult(true);
@@ -204,7 +209,18 @@ const Reviews = ({
                           }}
                         >
                           {gradeReview.gradeReviewResults.length > 0 && (
-                            <Button type="primary" style={{ outline: "none" }}>
+                            <Button
+                              type="primary"
+                              style={{ outline: "none" }}
+                              onClick={() => {
+                                refFinalGradeForCurrentGradeReviewDone.current =
+                                  gradeReview.gradeReviewResults[
+                                    gradeReview.gradeReviewResults.length - 1
+                                  ].point;
+                                refCurrentGradeReviewDone.current = gradeReview;
+                                setOpenDoneGradeReview(true);
+                              }}
+                            >
                               Mark Done
                             </Button>
                           )}
@@ -311,6 +327,33 @@ const Reviews = ({
     setCurrentReviewResult(currentReviewResultClone);
   };
 
+  const markDoneGradeReviewMutation = (gradeReviewDone: any) => {
+    const gradeTypeReviewsClone = cloneDeep(gradeTypeReviews);
+    for (const gradeReviewType of gradeTypeReviewsClone) {
+      let isFinish = false;
+      let isAllDone = true;
+      for (const gradeReviewSubSearch of gradeReviewType.gradeReviews) {
+        if (gradeReviewSubSearch.id == gradeReviewDone.id) {
+          gradeReviewSubSearch.status = "DONE";
+          isFinish = true;
+        }
+        if (gradeReviewSubSearch.status != "DONE") {
+          isAllDone = false;
+          if (isFinish) {
+            break;
+          }
+        }
+      }
+      if (isFinish) {
+        if (isAllDone) {
+          gradeReviewType.status = "DONE";
+        }
+        break;
+      }
+    }
+    myMutate(cacheKeyOfReviews, gradeTypeReviewsClone, false);
+  };
+
   const handleCancelReviewResult = () => {
     setOpenReviewResult(false);
   };
@@ -331,6 +374,27 @@ const Reviews = ({
       });
   };
 
+  const handleOKDone = () => {
+    console.log(refCurrentGradeReviewDone.current);
+    console.log(refFinalGradeForCurrentGradeReviewDone.current);
+    setConfirmLoading(true);
+    markDoneReviewResult(refCurrentGradeReviewDone.current.id)
+      .then((res) => {
+        markDoneGradeReviewMutation(res);
+        messageApi.success("Mark grade review done successfully");
+        setOpenDoneGradeReview(false);
+      })
+      .catch((err) => {
+        messageApi.error("Failed to mark grade review done");
+        console.log("Reviews: Failed to mark review result done", err);
+      })
+      .finally(() => {
+        setConfirmLoading(false);
+      });
+  };
+  const handleCancelDone = () => {
+    setOpenDoneGradeReview(false);
+  };
   return (
     <>
       {gradeStructureId == "" || !gradeTypeReviews ? (
@@ -384,6 +448,26 @@ const Reviews = ({
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title={
+          <>
+            <CheckOutlined style={{ color: "#23b574", marginRight: "20px" }} />
+            Mark Done {refCurrentGradeReviewDone.current?.topic}
+          </>
+        }
+        destroyOnClose={true}
+        open={openDoneGradeReview}
+        onOk={handleOKDone}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancelDone}
+      >
+        <p>
+          Mark this grade review with final grade:{" "}
+          <Tag color="green">
+            {refFinalGradeForCurrentGradeReviewDone.current}
+          </Tag>{" "}
+        </p>
       </Modal>
       {contextHolder}
     </>
