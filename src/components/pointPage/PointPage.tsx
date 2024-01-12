@@ -308,6 +308,7 @@ const PointPage = ({
             newArrayStudentPoint.push({
               studentId: studentID,
               point: res.point,
+              status: res.status,
             });
             resultFullStudentGrade[`${tempGradeStructures[i].id}`] =
               newArrayStudentPoint;
@@ -388,12 +389,15 @@ const PointPage = ({
     fullStudentGrades,
     mapGradeAndPercentage
   );
+
+  // console.log("fullGradeStudentAfterTransform", fullGradeStudentAfterTransform)
   StudentInCourse.forEach((student: any) => {
     if (currentRole == "STUDENT") {
       if (student.studentId == studentID) {
         const availableStudentGrade = fullGradeStudentAfterTransform.find(
           (studentInfo: any) => studentInfo.studentId == student.studentId
         );
+        // console.log("availableStudentGrade", availableStudentGrade);
         if (availableStudentGrade != undefined) {
           data.push({
             ...availableStudentGrade,
