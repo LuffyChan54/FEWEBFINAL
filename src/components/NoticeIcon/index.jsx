@@ -126,7 +126,10 @@ const NoticeIcon = (props) => {
   );
   const trigger = (
     <span
-      style={{ display: "flex", justifyContent: "center" }}
+      style={{
+        display: "flex",
+        justifyContent: "center",
+      }}
       className={classNames(noticeButtonClass, { opened: visible })}
     >
       <Badge

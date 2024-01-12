@@ -3,7 +3,7 @@ import { Avatar, List } from "antd";
 import React from "react";
 import classNames from "classnames";
 import styles from "./NoticeList.less";
-
+import "./notice.css";
 // export interface NoticeIconTabProps {
 //   count?: number;
 //   name?: string;
@@ -45,8 +45,15 @@ const NoticeList = ({
     );
   }
   return (
-    <div>
+    <div style={{ width: "300px" }}>
       <List
+        style={{
+          maxHeight: "300px",
+          overflowY: "scroll",
+          overflowX: "hidden",
+          width: "100%",
+          maxWidth: "300px",
+        }}
         className={styles.list}
         dataSource={data}
         renderItem={(item, i) => {
@@ -64,7 +71,7 @@ const NoticeList = ({
 
           return (
             <List.Item
-              className={itemCls}
+              className="notice-item"
               key={item.key || i}
               onClick={() => onClick && onClick(item)}
             >

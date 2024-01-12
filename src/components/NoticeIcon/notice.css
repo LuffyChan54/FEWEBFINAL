@@ -1,0 +1,8 @@
+.notice-item {
+  cursor: pointer !important;
+  transition: opacity 0.25s linear !important;
+}
+
+.notice-item:hover {
+  opacity: 0.6 !important;
+}

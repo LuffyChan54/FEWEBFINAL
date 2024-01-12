@@ -1,11 +1,16 @@
-import { Tag } from "antd";
+import { Button, Tag } from "antd";
 // @ts-ignore
 import NoticeIcon from "components/NoticeIcon/index.jsx";
 import { messaging, onMessageListener, requestForToken } from "lib/firebase";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNotifications, upsertUserToken } from "services/notificationService";
+import {
+  getNotifications,
+  upsertUserToken,
+} from "services/notificationService";
 import { NotificationTemplate } from "types/notification";
+import "./MyAlert.css";
+import { sortBy } from "lodash";
 
 type NoticeStatus = "todo" | "processing" | "urgent" | "doing";
 interface Notice {
@@ -16,6 +21,7 @@ interface Notice {
   extra?: any;
   title: string;
   avatar?: string;
+  isRead?: boolean;
   // Add other properties as needed
 }
 
@@ -37,7 +43,7 @@ function getNoticeData(notices: NotificationTemplate[]) {
         doing: "gold",
       }[newNotice.status];
       newNotice.extra = (
-        <Tag color={color} style={{ marginRight: 0 }}>
+        <Tag color={color} style={{ marginRight: 0, cursor: "pointer" }}>
           {newNotice.content}
         </Tag>
       );
@@ -45,7 +51,6 @@ function getNoticeData(notices: NotificationTemplate[]) {
     return newNotice;
   });
 
-  console.log("new Data", newNotices);
   return newNotices.reduce((pre: any, data: any) => {
     if (!pre[data.type]) {
       pre[data.type] = [];
@@ -61,68 +66,67 @@ const MyAlert = () => {
   const [data, setData] = useState<NotificationTemplate[]>([]);
   const navigate = useNavigate();
 
-  const noticeData = useMemo(() => getNoticeData(data), [data])
+  const noticeData = useMemo(() => getNoticeData(data), [data]);
   useEffect(() => {
-    requestForToken()
-      .then(token => {
-        if(!token) {
-          return;
-        }
-        upsertUserToken(token);
-      })
+    requestForToken().then((token) => {
+      if (!token) {
+        return;
+      }
+      upsertUserToken(token);
+    });
 
-     getNotifications()
-      .then(notifications => {
-        console.log(notifications)
-        setData(notifications || []);
-      })
+    getNotifications().then((notifications) => {
+      console.log(notifications);
+      setData(notifications || []);
+    });
   }, []);
 
-  const onItemClick = (item: any, tabProps: any) =>  {
-    console.log(item, tabProps)
+  const onItemClick = (item: any, tabProps: any) => {
+    console.log(item, tabProps);
     navigate(item.redirectEndpoint);
-  }
+  };
 
   const onClear = (tabTitle: any) => {
-    console.log(tabTitle)
-  }
+    console.log(tabTitle);
+  };
 
-  
   onMessageListener()
     .then((message: any) => {
       setPayload(message.data);
       setData([...data, message.data]);
     })
-    .catch((err) => console.log('failed: ', err));
-  return  (<NoticeIcon
-    className="notice-icon"
-    count={data.length}
-    onItemClick={onItemClick}
-    onClear={onClear}
-    loading={false}
-  >
-    <NoticeIcon.Tab
-      tabKey="notification"
-      list={noticeData.notification}
-      title="notification"
-      emptyText="Empty Notifications"
-      emptyImage="https://gw.alipayobjects.com/zos/rmsportal/wAhyIChODzsoKIOBHcBk.svg"
-    />
-    <NoticeIcon.Tab
-      tabKey="message"
-      list={noticeData.message}
-      title="message"
-      emptyText="Empty Messages"
-      emptyImage="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-    />
-    <NoticeIcon.Tab
-      tabKey="event"
-      list={noticeData.event}
-      title="event"
-      emptyText="Empty Events"
-      emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
-    />
-  </NoticeIcon>);
-}
+    .catch((err) => console.log("failed: ", err));
+  return (
+    <NoticeIcon
+      className="notice-icon"
+      count={data.length}
+      onItemClick={onItemClick}
+      onClear={onClear}
+      loading={false}
+    >
+      <NoticeIcon.Tab
+        tabKey="notification"
+        list={sortBy(noticeData.notification, "isRead")}
+        title="notification"
+        emptyText="Empty Notifications"
+        emptyImage="https://gw.alipayobjects.com/zos/rmsportal/wAhyIChODzsoKIOBHcBk.svg"
+      />
+      <NoticeIcon.Tab
+        tabKey="message"
+        list={sortBy(noticeData.message, "isRead")}
+        title="message"
+        emptyText="Empty Messages"
+        emptyImage="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
+      />
+      <NoticeIcon.Tab
+        tabKey="event"
+        list={sortBy(noticeData.event, "isRead")}
+        title="event"
+        emptyText="Empty Events"
+        emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
+      />
+    </NoticeIcon>
+  );
+};
 
 export default MyAlert;
