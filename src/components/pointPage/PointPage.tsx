@@ -278,9 +278,11 @@ const PointPage = ({
     }
   );
 
+  const cacheKeyOfStudentGrade =
+    ClassEndpointWTID + courseId + "#points#fullgradeStudent";
   //STUDENT GRADE:
   let { data: fullStudentGrades, mutate: mutateStudentGrades } = useSWR(
-    ClassEndpointWTID + courseId + "#points#fullgradeStudent",
+    cacheKeyOfStudentGrade,
     async () => {
       let tempGradeStructures: any = [];
       if (fullGradeStructure?.length == 0) {
@@ -1105,6 +1107,9 @@ const PointPage = ({
           studentIdFromSearchParam={searchParams.studentid}
           courseId={courseId}
           currentRole={currentRole}
+          fullStudentGrades={fullStudentGrades}
+          mutateStudentGrades={mutateStudentGrades}
+          cacheKeyOfStudentGrade={cacheKeyOfStudentGrade}
         />
       </Modal>
 

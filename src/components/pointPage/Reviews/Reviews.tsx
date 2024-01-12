@@ -33,6 +33,9 @@ const Reviews = ({
   studentIdFromSearchParam,
   courseId,
   currentRole,
+  fullStudentGrades,
+  mutateStudentGrades,
+  cacheKeyOfStudentGrade,
 }: any) => {
   const [messageApi, contextHolder] = message.useMessage();
   const { mutate: myMutate } = useSWRConfig();
@@ -73,6 +76,7 @@ const Reviews = ({
   }
 
   const refCurrentGradeReviewId = useRef("");
+  const refGradeTypeId: any = useRef("");
   const refCurrentGradeReviewDone: any = useRef({});
   const refFinalGradeForCurrentGradeReviewDone: any = useRef(-1);
   const handleAddReviewResult = (gradeReviewID: any) => {
@@ -143,34 +147,36 @@ const Reviews = ({
                   currentReviewResult[`${gradeTypeRV.id}`][`${gradeReview.id}`];
                 const objectForResultReview =
                   gradeReview.gradeReviewResults[indexOfSub];
-                itemsForGradeReviewResult = [
-                  {
-                    key: "point" + objectForResultReview.id,
-                    label: "Review Grade",
-                    children: (
-                      <Tag color="green">
-                        {objectForResultReview.point + ""}
-                      </Tag>
-                    ),
-                  },
-                  {
-                    key: "feedback" + objectForResultReview.id,
-                    label: "Feedback",
-                    children: objectForResultReview.feedback,
-                  },
-                  {
-                    key: "by" + objectForResultReview.id,
-                    label: "By",
-                    children:
-                      objectForResultReview.teacher.name +
-                      ` (${objectForResultReview.teacher.email})`,
-                  },
-                  {
-                    key: "event" + objectForResultReview.id,
-                    label: "Event",
-                    children: objectForResultReview.event,
-                  },
-                ];
+                if (objectForResultReview) {
+                  itemsForGradeReviewResult = [
+                    {
+                      key: "point" + objectForResultReview.id,
+                      label: "Review Grade",
+                      children: (
+                        <Tag color="green">
+                          {objectForResultReview.point + ""}
+                        </Tag>
+                      ),
+                    },
+                    {
+                      key: "feedback" + objectForResultReview.id,
+                      label: "Feedback",
+                      children: objectForResultReview.feedback,
+                    },
+                    {
+                      key: "by" + objectForResultReview.id,
+                      label: "By",
+                      children:
+                        objectForResultReview.teacher.name +
+                        ` (${objectForResultReview.teacher.email})`,
+                    },
+                    {
+                      key: "event" + objectForResultReview.id,
+                      label: "Event",
+                      children: objectForResultReview.event,
+                    },
+                  ];
+                }
               }
 
               const newChildReview = {
@@ -218,6 +224,8 @@ const Reviews = ({
                                     gradeReview.gradeReviewResults.length - 1
                                   ].point;
                                 refCurrentGradeReviewDone.current = gradeReview;
+                                refGradeTypeId.current =
+                                  gradeTypeRV.gradeTypeId;
                                 setOpenDoneGradeReview(true);
                               }}
                             >
@@ -329,9 +337,9 @@ const Reviews = ({
 
   const markDoneGradeReviewMutation = (gradeReviewDone: any) => {
     const gradeTypeReviewsClone = cloneDeep(gradeTypeReviews);
+    let isAllDone = true;
     for (const gradeReviewType of gradeTypeReviewsClone) {
       let isFinish = false;
-      let isAllDone = true;
       for (const gradeReviewSubSearch of gradeReviewType.gradeReviews) {
         if (gradeReviewSubSearch.id == gradeReviewDone.id) {
           gradeReviewSubSearch.status = "DONE";
@@ -352,6 +360,19 @@ const Reviews = ({
       }
     }
     myMutate(cacheKeyOfReviews, gradeTypeReviewsClone, false);
+
+    const gradeTypeIdWillChange = refGradeTypeId.current;
+    const newStudentGrades = cloneDeep(fullStudentGrades);
+    for (const tempStudent of newStudentGrades[gradeTypeIdWillChange]) {
+      if (studentIdReview == tempStudent.studentId) {
+        tempStudent.point = refFinalGradeForCurrentGradeReviewDone.current;
+        if (isAllDone) {
+          tempStudent.status = "DONE";
+        }
+        break;
+      }
+    }
+    myMutate(cacheKeyOfStudentGrade, newStudentGrades, false);
   };
 
   const handleCancelReviewResult = () => {
