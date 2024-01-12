@@ -13,6 +13,7 @@ export const getNotifications = async () => {
 export const maskAsSearchNotifications = async (
   notifications: MaskAsReadNotification[]
 ) => {
+  console.log(notifications);
   const resp = await notificationClient.put(
     `/api/notification/notifications`,
     notifications

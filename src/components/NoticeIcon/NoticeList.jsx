@@ -71,7 +71,7 @@ const NoticeList = ({
 
           return (
             <List.Item
-              className="notice-item"
+              className={item.read ? 'notice-item read' : "notice-item unread"}
               key={item.key || i}
               onClick={() => onClick && onClick(item)}
             >

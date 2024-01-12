@@ -1,6 +1,27 @@
 .notice-item {
   cursor: pointer !important;
   transition: opacity 0.25s linear !important;
+  position: relative;
+}
+
+/* .notice-item.read::after {
+  background-color: #23b574;
+} */
+
+.notice-item.unread::after {
+  background-color: #1877F2;
+}
+
+.notice-item::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-weight: 600;
 }
 
 .notice-item:hover {

@@ -22,7 +22,7 @@ interface Notice {
   extra?: any;
   title: string;
   avatar?: string;
-  isRead?: boolean;
+  read?: boolean;
   // Add other properties as needed
 }
 
@@ -31,7 +31,7 @@ function getNoticeData(notices: NotificationTemplate[]) {
     return {};
   }
   const newNotices = notices.map((notice: NotificationTemplate) => {
-    const newNotice: Notice = { ...notice };
+    const newNotice: Notice = { ...notice, read: notice.isRead };
     // transform id to item key
     if (newNotice.id) {
       newNotice.key = newNotice.id;
@@ -84,22 +84,22 @@ const MyAlert = () => {
 
   const onItemClick = (item: any, tabProps: any) => {
     console.log(item, tabProps);
-    maskAsSearchNotifications([
-      { notificationId: item.id, isRead: item.isRead },
-    ]).then((notification) => {
-      const newData = data.map((data) => {
-        if (data.id === notification.id) {
-          return {
-            ...data,
-            isRead: notification.isRead,
-          };
-        }
+    maskAsSearchNotifications([{ notificationId: item.id, isRead: true }]).then(
+      ([notification]) => {
+        const newData = data.map((data) => {
+          if (data.id === notification.id) {
+            return {
+              ...data,
+              isRead: notification.isRead,
+            };
+          }
 
-        return data;
-      });
+          return data;
+        });
 
-      setData(newData);
-    });
+        setData(newData);
+      }
+    );
     navigate(item.redirectEndpoint);
   };
 
@@ -126,21 +126,21 @@ const MyAlert = () => {
     >
       <NoticeIcon.Tab
         tabKey="notification"
-        list={sortBy(noticeData.notification, "isRead")}
+        list={noticeData.notification}
         title="notification"
         emptyText="Empty Notifications"
         emptyImage="https://gw.alipayobjects.com/zos/rmsportal/wAhyIChODzsoKIOBHcBk.svg"
       />
       <NoticeIcon.Tab
         tabKey="message"
-        list={sortBy(noticeData.message, "isRead")}
+        list={noticeData.message}
         title="message"
         emptyText="Empty Messages"
         emptyImage="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
       />
       <NoticeIcon.Tab
         tabKey="event"
-        list={sortBy(noticeData.event, "isRead")}
+        list={noticeData.event}
         title="event"
         emptyText="Empty Events"
         emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
