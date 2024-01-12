@@ -37,6 +37,8 @@ const Reviews = ({
   fullStudentGrades,
   mutateStudentGrades,
   cacheKeyOfStudentGrade,
+  gradeTypeIdFromSearchParam,
+  gradeReviewIdFromSearchParam,
 }: any) => {
   const [messageApi, contextHolder] = message.useMessage();
   const { mutate: myMutate } = useSWRConfig();
@@ -118,7 +120,7 @@ const Reviews = ({
         key: gradeTypeRV.gradeTypeId,
         children: (
           <Tabs
-            defaultActiveKey="1"
+            defaultActiveKey={gradeReviewIdFromSearchParam}
             type="card"
             size="small"
             onChange={(activeKey: any) => {
@@ -424,8 +426,12 @@ const Reviews = ({
   };
 
   if (gradeReviewIDChat == "") {
-    if (refValuesCheck.current) {
-      setGradeReviewIDChat(refValuesCheck.current[0].gradeReviews[0].id);
+    if (gradeReviewIdFromSearchParam) {
+      setGradeReviewIDChat(gradeReviewIdFromSearchParam);
+    } else {
+      if (refValuesCheck.current) {
+        setGradeReviewIDChat(refValuesCheck.current[0].gradeReviews[0].id);
+      }
     }
   }
 
@@ -438,7 +444,7 @@ const Reviews = ({
           <Col span={16}>
             <div>
               <Tabs
-                defaultActiveKey="abc"
+                defaultActiveKey={gradeTypeIdFromSearchParam}
                 size="small"
                 style={{ marginBottom: 10 }}
                 items={itemsForGradeTypeReviews}
