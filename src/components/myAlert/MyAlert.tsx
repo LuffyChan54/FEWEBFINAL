@@ -11,7 +11,7 @@ import {
 } from "services/notificationService";
 import { NotificationTemplate } from "types/notification";
 import "./MyAlert.css";
-import { sortBy } from "lodash";
+import { sortBy, uniqBy } from "lodash";
 
 type NoticeStatus = "todo" | "processing" | "urgent" | "doing";
 interface Notice {
@@ -52,11 +52,11 @@ function getNoticeData(notices: NotificationTemplate[]) {
     return newNotice;
   });
 
-  return newNotices.reduce((pre: any, data: any) => {
+  return uniqBy(newNotices, "key").reduce((pre: any, data: any) => {
     if (!pre[data.type]) {
       pre[data.type] = [];
     }
-    pre[data.type].push(data);
+    pre[data.type].unshift(data);
     return pre;
   }, {});
 }
@@ -68,6 +68,9 @@ const MyAlert = () => {
   const navigate = useNavigate();
 
   const noticeData = useMemo(() => getNoticeData(data), [data]);
+
+  console.log(noticeData);
+
   useEffect(() => {
     requestForToken().then((token) => {
       if (!token) {
@@ -111,11 +114,15 @@ const MyAlert = () => {
     .then((message: any) => {
       setPayload(message.data);
       setData([
+        {
+          ...message.data,
+          isRead: message.data.isRead === "false" ? false : true,
+        },
         ...data,
-        { ...message.data, isRead: Boolean(message.data.isRead) },
       ]);
     })
     .catch((err) => console.log("failed: ", err));
+
   return (
     <NoticeIcon
       className="notice-icon"

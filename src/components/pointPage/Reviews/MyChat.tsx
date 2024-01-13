@@ -25,6 +25,7 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
   const [socket, setSocket] = useState<Socket>();
 
   const getComments = (res: Comment[]) => {
+    console.log(res);
     setChatMessages([
       ...chatMessages,
       ...res.map((message) => ({
@@ -65,14 +66,13 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
     });
   };
 
-  const [triggerRender, setTriggerRender] = useState("");
-
   useEffect(() => {
     if (!gradeReviewIDChat) {
       return;
     }
+    console.log("connecting...", import.meta.env.VITE_NOTIFICATION_URL);
 
-    const socket = io(import.meta.env.VITE_REVIEW_SOCKET, {
+    const socket = io(import.meta.env.VITE_NOTIFICATION_URL, {
       extraHeaders: {
         authorization: "Bearer " + token.accessToken,
       },
@@ -88,6 +88,8 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
 
     setSocket(socket);
 
+    console.log("connected", socket.id);
+
     return () => {
       socket.removeAllListeners();
       socket.disconnect();
@@ -98,6 +100,7 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
     const messageSend = inputReferance.current.value;
     inputReferance.current.value = "";
 
+    console.log(socket?.id);
     socket?.emit(
       CREATE_COMMENT,
       {
@@ -105,6 +108,7 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
         content: messageSend,
       },
       (message: Comment) => {
+        console.log("create comment", message);
         setChatMessages([
           ...chatMessages,
           {
