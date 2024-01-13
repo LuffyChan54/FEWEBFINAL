@@ -43,7 +43,7 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
   };
 
   const commentCreated = (message: Comment) => {
-    console.log(message);
+    console.log("comment created", message);
     setChatMessages((prev: any) => {
       return [
         ...prev,
@@ -102,7 +102,7 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
     const messageSend = inputReferance.current.value;
     inputReferance.current.value = "";
 
-    console.log(socket?.id);
+    console.log("socket id", socket?.id);
     socket?.emit(
       CREATE_COMMENT,
       {
