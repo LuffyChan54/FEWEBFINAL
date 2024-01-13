@@ -25,10 +25,9 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
   const [socket, setSocket] = useState<Socket>();
 
   const getComments = (res: Comment[]) => {
-    console.log(res);
-    setChatMessages([
-      ...chatMessages,
-      ...res.map((message) => ({
+    console.log("get comments", res);
+    setChatMessages(
+      res.map((message) => ({
         avatar: message.avatar,
         avatarFlexible: true,
         title: (
@@ -39,8 +38,8 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
         position: user.userId === message.senderId ? "left" : "right",
         type: "text",
         text: message.content,
-      })),
-    ]);
+      }))
+    );
   };
 
   const commentCreated = (message: Comment) => {
@@ -78,12 +77,6 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
       },
     });
 
-    socket.emit(
-      GET_COMMENTS,
-      { gradeReviewId: gradeReviewIDChat },
-      getComments
-    );
-
     socket.on(COMMENT_CREATED, commentCreated);
 
     setSocket(socket);
@@ -94,7 +87,16 @@ const MyChat = ({ gradeReviewIDChat }: { gradeReviewIDChat: string }) => {
       socket.removeAllListeners();
       socket.disconnect();
     };
-  }, [gradeReviewIDChat]);
+  }, []);
+
+  useEffect(() => {
+    setChatMessages([]);
+    socket?.emit(
+      GET_COMMENTS,
+      { gradeReviewId: gradeReviewIDChat },
+      getComments
+    );
+  }, [gradeReviewIDChat, socket]);
 
   const handleSendMessage = () => {
     const messageSend = inputReferance.current.value;
