@@ -74,6 +74,10 @@ const Reviews = ({
     }
   );
 
+  if (gradeTypeReviews) {
+    refValuesCheck.current = gradeTypeReviews;
+  }
+
   if (refValuesCheck.current == undefined && gradeStructureId != "") {
     mutateGradeTypeReviews();
   }
@@ -448,6 +452,18 @@ const Reviews = ({
                 size="small"
                 style={{ marginBottom: 10 }}
                 items={itemsForGradeTypeReviews}
+                onChange={(activeKey: any) => {
+                  if (gradeTypeReviews) {
+                    const findObject = gradeTypeReviews.find(
+                      (el) => el.gradeTypeId == activeKey
+                    );
+                    if (findObject) {
+                      setGradeReviewIDChat(
+                        findObject.gradeReviews[0].id as any
+                      );
+                    }
+                  }
+                }}
               />
             </div>
           </Col>
